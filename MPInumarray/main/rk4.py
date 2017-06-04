@@ -85,7 +85,6 @@ def runge(a, b, initial_conditions, N, vfunc):
     def kfunc(comm, size, rank, vfunc, h, eqcount, t, y):
         """
         this function is paralleling runge method;
-        NOW IT'S WORKING LONG -- DO SOMETHING;
         :param comm: comm = MPI.COMM_WORLD
         :param size: size = comm.Get_size(); size of the claster
         :param rank: rank = comm.Get_rank(); rank of the node
@@ -109,67 +108,35 @@ def runge(a, b, initial_conditions, N, vfunc):
         i = 0
         point = rank
         while point < eqcount:
-            #print('kfunk while1 core' + str(rank))
             data[i] = (h * vfunc[point](t, point, y))  # *y - [1,2,3,4]
             point += size
             i += 1
-
         k = np.empty(eqcount)
-        comm.Gather(data, k, root=0)  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]
-        #==========================================
-        """
-        data = []
-        point = rank
-        while point < eqcount:
-            print('kfunk while1 core' + str(rank))
-            data.append(h * vfunc[point](t, point, *y))  # *y - [1,2,3,4]
-            point += size
-        k = comm.gather(data, root=0)  # k = [[#data1], [#data1], [#data], ...]
-        """
-        #==========================================
-        """
-        k11 = []
-
-        for point in range(size):
-            j = 0
-            while True:
-                try:
-                    print('kfunk while2 core', rank, ' ', j, ' ',point)  # !!!!Исправь ПРИНТЫ !! смотреть здесь что не так для случая с одним ядром?
-                    print(k[point][j])
-                    k11.append(k[point][j])
-                    j += 1
-                except:
-                    break
-        """
-        k11 = k#.reshape(eqcount)
+        comm.Gather(data, k, root=0)  #NUMPY ARRAY k = [[#data1], [#data1], [#data], ...]
+        #===========================================
+        k11 = k      #.reshape(eqcount)
         # [1-[1,2,3,4],2-[1,2,3,4], 3-[1,2,3,4],..]
-        #print('kfunk bcast core' + str(rank))
         k11 = comm.bcast(k11, root=0)  # рассылаем обратно на все узлы конечный ответ
-        return k11   # TIS NUMPY ARRAY NOW
+        return k11   #NUMPY ARRAY
 
     for i in range(N):
         yield t, y
-        #print('runge')
         k1 = kfunc(comm, size, rank, vfunc, h, eqcount, t, y)
-        #print('sdelano')
 
         yik2 = []
         for j in range(eqcount):#элементы y:1        2         3
             yik2.append(y[j] + k1[j]/2) #[[1,1,2,3],[2,1,2,3],[3,1,2,3]] - это yik2
         k2 = kfunc(comm, size, rank, vfunc, h, eqcount, t, yik2)
 
-        #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
         yik3 = []
         for j in range(eqcount):
             yik3.append(y[j] + k2[j]/2)
         k3 = kfunc(comm, size, rank, vfunc, h, eqcount, t, yik3)
-        #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
 
         yik4 = []
         for j in range(eqcount):
             yik4.append(y[j] + k3[j])
         k4 = kfunc(comm, size, rank, vfunc, h, eqcount, t, yik4)
-        #k4 = [h*f(t + h, *yik4) for f in vfunc]
 
         for j in range(eqcount):
             y[j] += (k1[j] + 2*k2[j] + 2*k3[j] + k4[j])/6
