@@ -70,13 +70,6 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
             print("CALCULATE R EXCEPTION")
     return r
 
-"""XXX
-for i in range(oscillators_number):
-    new_system = cls.KuramotoSystem(omega_vector, Aij, phase_vector, t0, tf, N)
-"""
-
-
-
 if __name__ == '__main__':
     #-----------greeting---------
     print("""program name
@@ -93,11 +86,8 @@ if __name__ == '__main__':
     config.read(config_filename)                                #loading from config section
     oscillators_number = int(config['visible']['oscillators_number'])
 
-    # TODO write programm processing timer
-    #-----------testing from 1 oscillator system to "oscillators_number" oscillators system--------
-    #for i in range(oscillators_number):
+    #-----------testing for oscillators_number oscillator system--------
     #loading
-
     kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number) #= i+1)
 
     #calculate
@@ -105,8 +95,7 @@ if __name__ == '__main__':
         timer = Timer().start()
 
     pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator() #system with 1~10 pendulums
-    #print(pendulum_time_output_array, pendulum_phase_output_array)
-    #print('RANKKKKKK', rank)
+
     #write in file
     time_output_array_length = len(pendulum_time_output_array)
     pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
@@ -115,18 +104,12 @@ if __name__ == '__main__':
 
     if rank==0 :
         print("Calculate time", timer.stop())
-        #print(pendulum_time_output_array[0], pendulum_phase_output_array)
         print("oscillators_number ",oscillators_number)
         with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:
             for i in range(time_output_array_length):
                 myfile.write(str(pendulum_time_output_array[i])+" "+str( pendulum_phase_output_array[i] ).replace("," , " ").replace("[" , " ").replace("]" , "" )+"\n")
     get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
-    #print('RANKKKKKK', rank)
-#print v2.0            for j in range( 1, (len(pendulum_time_output_array)-1) ):
-#                myfile.write(str(pendulum_time_output_array)[j]+" "+ str(pendulum_phase_output_array)[j]+"\n")
 
-#print v1.0            myfile.write(str(pendulum_time_output_array)[1:-1]+"\n"+ str(pendulum_phase_output_array)[1:-1]+"\n")
-    get_r
     #------------calculating r(lambd)-------------
     '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
     lambdamin = 0

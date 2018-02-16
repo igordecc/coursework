@@ -104,28 +104,18 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
             i += 1
             point += size
         data = np.empty(i)
-        #print(rank, 'oscillators_number: ' + str(oscillators_number))
-        #print(rank, 'count i: ' + str(i))
-        #print(data, 'DATA')
-
         i = 0
         point = rank
         while point < oscillators_number:
-            #print(rank,'while point:', point)
-            #print(rank, 'while i:', i)
             try:
                 data[i] = (h * vfunc[point](t, point, y))  # *y - [1,2,3,4]
             except:
-                #print('EXCEPT rank', rank)
                 quit()
             point += size
             i += 1
-        #print('calc i: '+str(i))
-        #print('calc data: ', data)
+
         k = np.empty(oscillators_number)
-        #if rank==0:
         comm.Gatherv(data, k, root=0)  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]
-        #print(rank,'k data: ', k)
         #==========================================
         """
         data = []
@@ -151,9 +141,7 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
                 except:
                     break
         """
-        k11 = k#.reshape(oscillators_number)
-        # [1-[1,2,3,4],2-[1,2,3,4], 3-[1,2,3,4],..]
-        #print('kfunk bcast core' + str(rank))
+        k11 = k        # [1-[1,2,3,4],2-[1,2,3,4], 3-[1,2,3,4],..]
         k11 = comm.bcast(k11, root=0)  # рассылаем обратно на все узлы конечный ответ
         return k11   # TIS NUMPY ARRAY NOW
 
@@ -164,20 +152,17 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
         yik2 = []
         for j in range(oscillators_number):#элементы y:1        2         3
             yik2.append(y[j] + k1[j]/2) #[[1,1,2,3],[2,1,2,3],[3,1,2,3]] - это yik2
-        k2 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik2)
+        k2 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik2)        #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
 
-        #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
         yik3 = []
         for j in range(oscillators_number):
             yik3.append(y[j] + k2[j]/2)
-        k3 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik3)
-        #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
+        k3 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik3)        #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
 
         yik4 = []
         for j in range(oscillators_number):
             yik4.append(y[j] + k3[j])
-        k4 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik4)
-        #k4 = [h*f(t + h, *yik4) for f in vfunc]
+        k4 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik4)        #k4 = [h*f(t + h, *yik4) for f in vfunc]
 
         for j in range(oscillators_number):
             y[j] += (k1[j] + 2*k2[j] + 2*k3[j] + k4[j])/6
