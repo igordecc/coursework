@@ -1,7 +1,9 @@
-# sudo mount -t vboxsf PycharmProjects ~/PycharmProjects
-# sudo mount -t vboxsf course_work t ///маунт папки
-# python3 ./PycharmProjects/MPIyoung/main/main.py (путь к файлу)
-# mpirun -n 3 python3 ./PycharmProjects/MPIyoung/main/main.py (запуск на n узлах - почитать документацию по mpirun - именно по ней)
+# sudo mount -t vboxsf PycharmProjects ~/PycharmProjects (sudo mount -t vboxsf course_work ~/t)
+# cd ./t/MPInumarray/main
+# mpurun -n 4 python3 ./shell\ and\ run\ timers.py
+
+# python3 ./t/MPInumarray/main/main.py (путь к файлу)
+# mpirun -n 3 python3 ./t/MPInumarray/main/main.py (запуск на n узлах - почитать документацию по mpirun - именно по ней)
 # shotdown -P 0
 # (mpirun) https://www.open-mpi.org/doc/current/man1/mpirun.1.php
 # (mpi docs) https://www.open-mpi.org/doc/v2.0/
@@ -9,6 +11,21 @@
 # (login, password, sudo password) = user, password, password
 # (mpi tutor) https://pythonhosted.org/mpi4py/usrman/tutorial.html
 # (python doc mpi) http://mpi4py.readthedocs.io/en/2.0.0/
+"""
+how to instal openmpi
+download openmpi.tar.gr/// wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.0.tar.gz
+unpack/// tar -xzf openmpi-3.0.0.tar.gz
+go to folder openmpi-3.0.0///cd openmpi-3.0.0
+now we run configure/// configure
+now we run make /// make
+now we run sudo make install// sudo make install
+"""
+"""
+if mpirun cannot work with error:
+mpi cannot find libopen-rte.so.40
+then run /// sudo ldconfig
+"""
+
 """
 from mpi4py import MPI
 print("zapuweno na uzle %d" % (MPI.COMM_WORLD.Get_rank(),))
@@ -91,8 +108,9 @@ if __name__ == '__main__':
 
     vfunc = []
     for nf in range(d):  # nf - function number
-        def f(t, nf, *thetalist):
+        def f(t, nf, *theta):
             _sum = 0
+            thetalist = [*theta]
             for j in range(d):
                 _sum += math.sin(thetalist[j] - thetalist[nf])
             return omega[nf] + K[nf] / d * _sum
