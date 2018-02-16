@@ -1,4 +1,5 @@
 # sudo mount -t vboxsf PycharmProjects ~/PycharmProjects
+# sudo mount -t vboxsf course_work t ///маунт папки
 # python3 ./PycharmProjects/MPIyoung/main/main.py (путь к файлу)
 # mpirun -n 3 python3 ./PycharmProjects/MPIyoung/main/main.py (запуск на n узлах - почитать документацию по mpirun - именно по ней)
 # shotdown -P 0
@@ -90,9 +91,8 @@ if __name__ == '__main__':
 
     vfunc = []
     for nf in range(d):  # nf - function number
-        def f(t, nf, *theta):
+        def f(t, nf, *thetalist):
             _sum = 0
-            thetalist = [*theta]
             for j in range(d):
                 _sum += math.sin(thetalist[j] - thetalist[nf])
             return omega[nf] + K[nf] / d * _sum

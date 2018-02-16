@@ -2,19 +2,8 @@ import KuramotoSystem as cls
 import configparser
 config = configparser.ConfigParser()
 import numpy as np
-import time
 
-class Timer:
-    def __init__(self):
-        self.t = 0
 
-    def start(self):
-        self.t = time.perf_counter()
-        return self
-
-    def stop(self):
-        self.t = time.perf_counter()-self.t
-        return self.t
 
 
 
@@ -52,8 +41,7 @@ for i in range(oscillators_number):
     new_system = cls.KuramotoSystem(omega_vector, Aij, phase_vector, t0, tf, N)
 """
 
-with open("test_txt//time.txt", "w") as myfile:
-    myfile.write('')
+
 
 if __name__ == '__main__':
     #-----------greeting---------
@@ -76,8 +64,6 @@ if __name__ == '__main__':
         #loading
         kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number = i+1)
 
-        timer = Timer().start()
-
         #calculate
         pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator() #system with 1~10 pendulums
 
@@ -86,11 +72,22 @@ if __name__ == '__main__':
             for j in range(0, (len(pendulum_time_output_array))):
                 myfile.write(str(pendulum_time_output_array[j])+" "+ ( str( pendulum_phase_output_array[j*(i+1):(j+1)*(i+1)] )[1:-1] ).replace("," , " ")+"\n")
 
-        timer = timer.stop()
-
-        with open("test_txt//time.txt", "a") as myfile:
-            myfile.write(str(timer) + "\n")
 #print v2.0            for j in range( 1, (len(pendulum_time_output_array)-1) ):
 #                myfile.write(str(pendulum_time_output_array)[j]+" "+ str(pendulum_phase_output_array)[j]+"\n")
 
 #print v1.0            myfile.write(str(pendulum_time_output_array)[1:-1]+"\n"+ str(pendulum_phase_output_array)[1:-1]+"\n")
+
+    #------------calculating r(lambd)-------------
+    '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
+    lambdamin = 0
+    lamdamax = 2.5
+    step = 0.05
+    for i in range(lambdamin,lamdamax, step):
+        #loading
+        kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number) #system with 10 pendulums, ONLY 10!
+
+        #calculate
+
+    '''
+
+#unknown Loopies
