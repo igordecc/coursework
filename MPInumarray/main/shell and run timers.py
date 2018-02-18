@@ -3,7 +3,6 @@ import configparser
 import numpy as np
 import math
 import time
-import matplotlib.pyplot as pp
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 size = comm.Get_size()  # количество узлов
@@ -118,7 +117,7 @@ if __name__ == '__main__':
         print("oscillators_number ",oscillators_number)
         with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:
             for i in range(time_output_array_length):
-                myfile.write(str(pendulum_time_output_array[i])+" "+str( pendulum_phase_output_array[i] )+"\n")
+                myfile.write(str(pendulum_time_output_array[i])+" "+str( pendulum_phase_output_array[i] ).replace("," , " ").replace("[" , " ").replace("]" , "" )+"\n")
 
     # ------------calculating r(lambd)-------------
     r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
@@ -127,8 +126,6 @@ if __name__ == '__main__':
             for i in range(time_output_array_length):
                 myfile.write(str(pendulum_time_output_array[i])+" "+str( r[i] ).replace("," , " ").replace("[" , " ").replace("]" , "" )+"\n")
 
-    pp.plot(pendulum_time_output_array, r)
-    pp.show()
     '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
     lambdamin = 0
     lamdamax = 2.5
