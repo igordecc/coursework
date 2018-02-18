@@ -6,7 +6,7 @@ kuramoto_config.write("""[DEFAULT]
 [visible]
 """)
 #-----------------------------
-oscillators_number = 10
+oscillators_number = 5
 #----------------------------
 kuramoto_config.write("oscillators_number = " + str(oscillators_number) + "\n")    #N ~~ oscillators_number
 kuramoto_config.write("lambd = " + "2.5" + "\n")    #lambd ~~ lambd ~~ all coupling map
@@ -15,7 +15,7 @@ kuramoto_config.write("""
 """)
 omega_vector = ''
 for i in range(oscillators_number):
-    omega_vector += ' 6'  # + str(round(random.uniform(1, 2), 2))
+    omega_vector += ' .6'  # + str(round(random.uniform(1, 2), 2))
 kuramoto_config.write("omega_vector = " + omega_vector + "\n") #omega_i ~~ omega_wector[i]
 
 Aij = ''

@@ -50,7 +50,7 @@ def string_to_intvector(string):
     :return: intvector
     """
     strvector = string.split(' ')
-    intvector = [float(strvector[i]) for i in range(len(strvector))]
+    intvector = [float(i) for i in strvector]
     #print(intvector)
     return intvector
 
@@ -111,8 +111,10 @@ if __name__ == '__main__':
     pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
     pendulum_phase_output_array = pendulum_phase_output_array % (2*math.pi)
     pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])     ###### cut this string out for radian graph
-    if rank==0 :
+    if rank == 0:
         print(pendulum_phase_output_array)
+    if rank==0 :
+        #print(pendulum_phase_output_array)
         print("Calculate time", timer.stop())       ####### dont delete
         print("oscillators_number ",oscillators_number)
         with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:
@@ -122,7 +124,7 @@ if __name__ == '__main__':
     # ------------calculating r(lambd)-------------
     r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
     if rank==0 :
-        with open("test_txt//test_r"+str(oscillators_number)+".txt", "w") as myfile:
+        with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile:
             for i in range(time_output_array_length):
                 myfile.write(str(pendulum_time_output_array[i])+" "+str( r[i] ).replace("," , " ").replace("[" , " ").replace("]" , "" )+"\n")
 
