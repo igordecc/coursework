@@ -1,7 +1,8 @@
 import matplotlib.pyplot as pp
 import numpy as np
+#pyploter.py  plot a graphics of lamdas or r parameter
 if __name__ == '__main__':
-    filename ='test_r5.txt'      # input('filename:')
+    filename ='test5.txt'      # input('filename:')
     with open('test_txt//'+filename, "r") as myfile:
         data_index_array = []
         data_array = []
@@ -21,9 +22,9 @@ if __name__ == '__main__':
     index_length = len(data_index_array)
 
     data_array = np.array(data_array)
-    data_reshaped_array = np.reshape(data_array,[oscillators_number, index_length])
-    print(data_array)
 
-    for i in range(oscillators_number):
-        pp.plot(data_index_array, data_reshaped_array[i])
+    data_transposed_array = np.transpose(data_array,[1, 0]) 
+    print(data_transposed_array)
+    for i in range(oscillators_number):     # пример: пять осцилляторов = пять списков
+        pp.plot(data_index_array, data_transposed_array[i])
     pp.show()
