@@ -13,21 +13,28 @@ kuramoto_config.write("lambd = " + "2.5" + "\n")    #lambd ~~ lambd ~~ all coupl
 kuramoto_config.write("""
 [invisible]
 """)
+#----------omega_vector----------------
 omega_vector = ''
 for i in range(oscillators_number):
-    omega_vector += ' .6'  # + str(round(random.uniform(1, 2), 2))
-kuramoto_config.write("omega_vector = " + omega_vector + "\n") #omega_i ~~ omega_wector[i]
+    omega_vector += str( i*0.1 )+' '  # + str(round(random.uniform(1, 2), 2))
 
+kuramoto_config.write("omega_vector = " + omega_vector + "\n") #omega_i ~~ omega_wector[i]
+#--------------------------
+#-----------Aij---------------
 Aij = ''
 for i in range(oscillators_number):
     for j in range(oscillators_number):
+        #Aij += ' ' + str(1)
         Aij += ' ' + str(round(random.uniform(0,1), 2))
 kuramoto_config.write("Aij = " + Aij + "\n") #A_ij ~~ oscillators_number^2   NOW enabled
+#--------------------------
 
+#-----------phase_vector---------------
 phase_vector = ''
 for i in range(oscillators_number):
-    phase_vector += ' ' + str(round(random.uniform(0, 12), 2))
+    phase_vector += ' ' + str((i+1) * 0.1)#str(round(random.uniform(0, 12), 2))
 kuramoto_config.write("phase_vector = " + phase_vector + "\n") #teta_i ~~ phase_vector[i]
+#--------------------------
 
 kuramoto_config.write("""t0 = 0
 tf = 1000

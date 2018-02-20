@@ -119,7 +119,6 @@ if __name__ == '__main__':
         print("oscillators_number ",oscillators_number)
         with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:
             for i in range(time_output_array_length):
-                #myfile.write(str(pendulum_time_output_array[i])+" "+str( pendulum_phase_output_array[i] ).replace("," , " ").replace("[" , " ").replace("]" , "" )+"\n")
                 myfile.write(str(pendulum_time_output_array[i])+" "+" ".join(str(x) for x in pendulum_phase_output_array[i])+"\n")
 
     # ------------calculating r(lambd)-------------
@@ -127,7 +126,6 @@ if __name__ == '__main__':
     if rank==0 :
         with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile:
             for i in range(time_output_array_length):
-                #myfile.write(str(pendulum_time_output_array[i])+" "+str( r[i] ).replace("," , " ").replace("[" , " ").replace("]" , "" )+"\n")
                 myfile.write(str(pendulum_time_output_array[i]) + " " + str(r[i]) + "\n")
 
     '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
