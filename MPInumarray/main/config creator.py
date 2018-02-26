@@ -16,28 +16,32 @@ kuramoto_config.write("""
 #----------omega_vector----------------
 omega_vector = ''
 for i in range(oscillators_number):
-    omega_vector += str( i*0.1 )+' '  # + str(round(random.uniform(1, 2), 2))
+    omega_vector += ' ' + str(round(random.uniform(0.05, 0.2), 2)) #DONT TOCH
 
 kuramoto_config.write("omega_vector = " + omega_vector + "\n") #omega_i ~~ omega_wector[i]
 #--------------------------
 #-----------Aij---------------
 Aij = ''
 for i in range(oscillators_number):
+    #Aij += "\n"
     for j in range(oscillators_number):
         #Aij += ' ' + str(1)
-        Aij += ' ' + str(round(random.uniform(0,1), 2))
+        if i!=j:
+            Aij += ' ' + str(1)
+        else:
+            Aij += ' ' + str(0) #str(round(random.uniform(0,1), 2))
 kuramoto_config.write("Aij = " + Aij + "\n") #A_ij ~~ oscillators_number^2   NOW enabled
 #--------------------------
 
 #-----------phase_vector---------------
 phase_vector = ''
 for i in range(oscillators_number):
-    phase_vector += ' ' + str((i+1) * 0.1)#str(round(random.uniform(0, 12), 2))
+    phase_vector += ' ' + str(round(random.uniform(0, 12), 2)) #str((i+1) * 0.1)#
 kuramoto_config.write("phase_vector = " + phase_vector + "\n") #teta_i ~~ phase_vector[i]
 #--------------------------
 
 kuramoto_config.write("""t0 = 0
-tf = 1000
+tf = 100
 N = 1000""")
 
 

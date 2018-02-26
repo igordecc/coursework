@@ -92,7 +92,7 @@ class Pendulum:
         #print(self.pendulum_index)
         my_phase = phase_vector[self.pendulum_index]
         for j in range(self.oscillators_number):
-            summ += self.A[self.pendulum_index][j] * math.sin(phase_vector[j] - my_phase)
+            summ += self.A[self.pendulum_index][j] * math.sin( phase_vector[j] - my_phase )
         return self.omega + self.lambd * summ/self.oscillators_number
 
     def __call__(self, t, point , phase_vector):
