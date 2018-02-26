@@ -98,13 +98,13 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
         :return: k - one of four part of y - 4 phase vectors for calculus
         """
         #=========== paralleled part ==============#####################ERROR IS HERE
+        """
         i = 0
         point = rank
         while point < oscillators_number:
             i += 1
             point += size
         #print(i,' rank:',rank)
-
         data = np.empty(i) #[,]
 
         i = 0
@@ -116,7 +116,24 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
                 quit()
             point += size
             i += 1
+        """
+        point = rank
+        #==============================
+        divv = oscillators_number//size
+        modd = oscillators_number%size
+        if rank < modd:
+            data = np.empty(divv+1)
+        else:
+            data = np.empty(divv)
 
+        if rank < modd:
+            for i in range(len(data)):
+                data[i] = (h* vfunc[ (divv+1)*rank + i ](t, point,y))
+        else:
+            for i in range(len(data)):
+                data[i] = (h* vfunc[ (divv)*rank + modd + i ](t, point,y))
+
+        #================================
         k = np.empty(oscillators_number)
         #[1,4]
         #[0,3]
