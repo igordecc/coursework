@@ -1,4 +1,5 @@
 *.txt
 *.png
+*.doc
 .idea/
 __pycache__
