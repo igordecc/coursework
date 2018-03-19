@@ -6,10 +6,10 @@ kuramoto_config.write("""[DEFAULT]
 [visible]
 """)
 #-----------------------------
-oscillators_number = 5
+oscillators_number = 112
 #----------------------------
 kuramoto_config.write("oscillators_number = " + str(oscillators_number) + "\n")    #N ~~ oscillators_number
-kuramoto_config.write("lambd = " + "2.5" + "\n")    #lambd ~~ lambd ~~ all coupling map
+kuramoto_config.write("lambd = " + "0.05" + "\n")    #lambd ~~ lambd ~~ all coupling map
 kuramoto_config.write("""
 [invisible]
 """)
@@ -46,6 +46,10 @@ N = 1000""")
 
 
 """
-import random
-random.randint(0,10)
+5 oscillators = 0.3196
+10 = 0.4721
+50 = 4.1638
+75 = 8.4893
+100 oscillators = 14.8766
+112 = 19.0881
 """

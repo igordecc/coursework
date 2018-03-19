@@ -111,13 +111,10 @@ if __name__ == '__main__':
     pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
     pendulum_phase_output_array = pendulum_phase_output_array % (2*math.pi)
     pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])     ###### cut this string out for radian graph
-    if rank == 0:
-        #print(pendulum_phase_output_array)
-        ...
+
     if rank==0 :
-        #print(pendulum_phase_output_array)
-        #print("Calculate time", timer.stop())       ####### dont delete
-        #print("oscillators_number ",oscillators_number)
+        work_time_array = timer.stop()
+        print("Calculate time", work_time_array)
         with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:
             for i in range(time_output_array_length):
                 myfile.write(str(pendulum_time_output_array[i])+" "+" ".join(str(x) for x in pendulum_phase_output_array[i])+"\n")

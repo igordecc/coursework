@@ -61,8 +61,6 @@ class KuramotoSystem:
     #def push_to_the_file(self, filename): - see in the shell modul
 
 
-
-
 class Pendulum:
     def __init__(self, lambd, A, pendulum_index, omega, oscillators_number):  # lambd -- A[i]
         """

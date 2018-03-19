@@ -107,6 +107,11 @@ if __name__ == '__main__':
     r_array4lambd = []
     r_accuracy = 5 #will get 5 r elements from r_array, instead of one
     lambd_array = []
+    #work_time_array = []
+    # Timer start
+    if rank == 0:
+        timer = Timer().start()
+
     for i in np.arange(lambdamin, lamdamax+step , step):
         # loading
         kuramotosystem_class_exemplar.append(load_kuramotosystem_from_config(config_filename, oscillators_number, lambd = i))
@@ -128,10 +133,11 @@ if __name__ == '__main__':
 
     lambd_array_len = len(lambd_array)
 
-    # transformation r_array - found everage in each [r,r,r] in r_array4lambd = [[r,r,r], [r,r,r], [r,r,r]]
+    # average r_array - found average in each [r,r,r] in r_array4lambd = [[r,r,r], [r,r,r], [r,r,r]]
     r_array4lambd = [np.average(i) for i in r_array4lambd]
-
     if rank == 0:
+        work_time_array = timer.stop()
+        print(work_time_array)
         with open("test_txt//testlr5.txt", "w") as myfile:
             for i in range(lambd_array_len):
                 myfile.write(str(lambd_array[i])+" "+ str(r_array4lambd[i])+'\n')#" ".join(str(x) for x in r_array4lambd[i])+'\n')
