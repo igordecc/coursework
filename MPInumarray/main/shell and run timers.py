@@ -1,8 +1,11 @@
 import KuramotoSystem as cls
 import configparser
+from config_creator import create_config
 import numpy as np
 import math
 import time
+import json
+
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 size = comm.Get_size()  # количество узлов
@@ -22,37 +25,10 @@ class Timer:
         return self.t
 
 
-
 #'kuramoto_config.ini'
-def load_kuramotosystem_from_config(filename, oscillators_number):
-    config.read(filename)
-    lambd = float(config['visible']['lambd'])
-    omega_vector = string_to_intvector(config['invisible']['omega_vector'])
-    Aij = string_to_intvector(config['invisible']['Aij'])  # boundings Aij
-    Aijarray = np.array(Aij)
-    Aijarray = np.reshape(Aijarray, [len(omega_vector), len(omega_vector)])
-    phase_vector = string_to_intvector(config['invisible']['phase_vector'])
+def load_kuramotosystem_from_config(config):
+    return cls.KuramotoSystem(config['omega_vector'], config['lambd'], config['Aij'], config['phase_vector'], config['t0'], config['tf'], config['N'], config['oscillators_number'])
 
-    #omega_vector = omega_vector[0:oscillators_number]
-    #Aijarray = Aijarray[0:oscillators_number][0:oscillators_number]
-    #phase_vector = phase_vector[0:oscillators_number]
-
-    t0 = int(config['invisible']['t0'])
-    tf = int(config['invisible']['tf'])
-    N = int(config['invisible']['N'])  # h = (t0 - tf) / N  time discretisation  coefficient, NOT THE OSCILLATORS NUMBER
-    #print('rank :' + str(rank),' shell', str(phase_vector))
-    return cls.KuramotoSystem(omega_vector, lambd, Aijarray, phase_vector, t0, tf, N, oscillators_number)
-
-def string_to_intvector(string):
-    """
-    please write numbers in config with ' ' SPLIT
-    :param string:
-    :return: intvector
-    """
-    strvector = string.split(' ')
-    intvector = [float(i) for i in strvector]
-    #print(intvector)
-    return intvector
 
 def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number):
     """
@@ -83,59 +59,65 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
 
     return r
 
+def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
+
+    for oscillators_number in np.arange(osc_min, osc_max, osc_step):
+        config = create_config(oscillators_number, filename=None)
+
+        kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config) #= i+1)    #loading
+
+        if rank == 0:   #calculate
+            timer = Timer().start()
+
+        pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator() #system with 1~10 pendulums
+
+        time_output_array_length = len(pendulum_time_output_array)
+        pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
+        pendulum_phase_output_array = pendulum_phase_output_array % (2*math.pi)
+        pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])     ###### cut this string out for radian graph
+
+        if rank==0 :     #write in file
+            if "time" in flag:
+                timer_result = timer.stop()
+                print("Calculate time", timer_result)
+                with open("test_txt//time.txt", "a") as myfile: #timer stuff
+                    myfile.write(str(oscillators_number)+" "+str(timer_result)+"\n")
+            if "phase" in flag:
+                with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:  #plot: phase(time)
+                    for i in range(time_output_array_length):
+                        myfile.write(str(pendulum_time_output_array[i])+" "+" ".join(str(x) for x in pendulum_phase_output_array[i])+"\n")
+            if "r" in flag:    #write in file
+                r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)  # ------------calculating r(lambd)-------------
+                with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile: #plot: r(time)
+                    for i in range(time_output_array_length):
+                        myfile.write(str(pendulum_time_output_array[i]) + " " + str(r[i]) + "\n")
+        '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
+                   lambdamin = 0
+                   lamdamax = 2.5
+                   step = 0.05
+                   for i in range(lambdamin,lamdamax, step):
+                       #loading
+                       kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number) #system with 10 pendulums, ONLY 10!
+
+                       #calculate
+
+                   '''
+
+
 if __name__ == '__main__':
-    #-----------greeting---------
-    #print("""program name\n programm version\n authors\n data realise \n""")
+    flag = {"time"}     #flag = {"time", "phase", "r"}
+    """
+    "time" -> time(oscillators_number) measuring
+    "phase" -> phase(time) measuring
+    "r" -> r(time) measuring
+    """
+    with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
+        ...
+    run_K_model(flag, osc_min=1, osc_max=100, osc_step=10)
+    run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
 
-    #-----------input-------------
-    config_filename = 'kuramoto_config.ini' #input("general_config_filename.ini\n")    # kuramoto_config.ini
-    #minor_config_filename = input("minor_config_filename.ini\n")
 
-    #-----------config_interations--------
-    config = configparser.ConfigParser()
-    config.read(config_filename)                                #loading from config section
-    oscillators_number = int(config['visible']['oscillators_number'])
 
-    #-----------testing for oscillators_number oscillator system--------
-    #loading
-    kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number) #= i+1)
 
-    #calculate
-    if rank == 0:
-        timer = Timer().start()
-
-    pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator() #system with 1~10 pendulums
-
-    #write in file
-    time_output_array_length = len(pendulum_time_output_array)
-    pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
-    pendulum_phase_output_array = pendulum_phase_output_array % (2*math.pi)
-    pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])     ###### cut this string out for radian graph
-
-    if rank==0 :
-        work_time_array = timer.stop()
-        print("Calculate time", work_time_array)
-        with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:
-            for i in range(time_output_array_length):
-                myfile.write(str(pendulum_time_output_array[i])+" "+" ".join(str(x) for x in pendulum_phase_output_array[i])+"\n")
-
-    # ------------calculating r(lambd)-------------
-    r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
-    if rank==0 :
-        with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile:
-            for i in range(time_output_array_length):
-                myfile.write(str(pendulum_time_output_array[i]) + " " + str(r[i]) + "\n")
-
-    '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
-    lambdamin = 0
-    lamdamax = 2.5
-    step = 0.05
-    for i in range(lambdamin,lamdamax, step):
-        #loading
-        kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number) #system with 10 pendulums, ONLY 10!
-
-        #calculate
-
-    '''
 
 #unknown Loopies
