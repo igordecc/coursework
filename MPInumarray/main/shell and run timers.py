@@ -42,7 +42,6 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
     for i in range(time_output_array_length):
         sum_cos = 0
         sum_sin = 0
-        k = 0
         for j in pendulum_phase_output_array[i]:
             sum_cos += math.cos(j)
             sum_sin += math.sin(j)
@@ -55,15 +54,13 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
             r[i] = None
             print("CALCULATE R EXCEPTION")
 
-        k +=1
 
     return r
 
 def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
 
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        config = create_config(oscillators_number, filename=None)
-
+        config = create_config(oscillators_number=oscillators_number, filename=None)
         kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config) #= i+1)    #loading
 
         if rank == 0:   #calculate
@@ -87,7 +84,7 @@ def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
                     for i in range(time_output_array_length):
                         myfile.write(str(pendulum_time_output_array[i])+" "+" ".join(str(x) for x in pendulum_phase_output_array[i])+"\n")
             if "r" in flag:    #write in file
-                r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)  # ------------calculating r(lambd)-------------
+                r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)  # ------------calculating r(t)-------------
                 with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile: #plot: r(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(pendulum_time_output_array[i]) + " " + str(r[i]) + "\n")
@@ -103,9 +100,47 @@ def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
 
                    '''
 
+def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number = 10):
+    r_out = []
+    lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
+    if rank == 0:
+        timer = Timer().start()
+
+    for _lambda in lambd_out:
+        config = create_config(lambd=_lambda, oscillators_number = oscillators_number, filename=None)
+
+        kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config)  # = i+1)    #loading
+
+        pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator()  # system with 1~10 pendulums
+
+        time_output_array_length = len(pendulum_time_output_array)
+        pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
+        pendulum_phase_output_array = pendulum_phase_output_array % (2 * math.pi)
+        pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])  ###### cut this string out for radian graph
+        r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
+        r_out.append( r_array[-1])
+        # ------------calculating r-------------
+        #r_out.append( sum(r_array[-5:-1])/len(r_array[-5:-1]) )
+
+
+    if rank==0 :     #write in file
+        if "time" in flag:
+            timer_result = timer.stop()
+            print("Calculate time", timer_result)
+            with open("test_txt//time_r(lambda).txt", "w") as myfile:  # timer stuff
+                myfile.write(str(oscillators_number) + " " + str(timer_result) + "\n")
+        if "r" in flag:  # write in file
+            with open("test_txt//test_r(lambda).txt", "w") as myfile:  # plot: r(time)
+                for i in range(len(r_out)):
+                    myfile.write(str(lambd_out[i]) + " " + str(r_out[i]) + "\n")
+            with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
+                for i in range(time_output_array_length):
+                    myfile.write(str(pendulum_time_output_array[i]) + " " + str(r_array[i]) + "\n")
+
+        ...
 
 if __name__ == '__main__':
-    flag = {"time"}     #flag = {"time", "phase", "r"}
+    flag = {"time","phase","r"}     #flag = {"time", "phase", "r"}
     """
     "time" -> time(oscillators_number) measuring
     "phase" -> phase(time) measuring
@@ -113,8 +148,10 @@ if __name__ == '__main__':
     """
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
-    run_K_model(flag, osc_min=1, osc_max=100, osc_step=10)
-    run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
+    run_K_model(flag, osc_min=1, osc_max=31, osc_step=10)
+    #run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
+    #run_RLambd_model(flag, lmb_min=0, lmb_max=1.5, lmb_step=0.1, oscillators_number = 10)
+
 
 
 

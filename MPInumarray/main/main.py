@@ -55,85 +55,62 @@ class Timer:
 
 
 if __name__ == '__main__':
+    from mpi4py import MPI
+    import numpy as np
+
+    comm = MPI.COMM_WORLD
+    size = comm.Get_size()  # количество узлов
+    rank = comm.Get_rank()  # номер узла
+
+    def kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y):
+        divv = oscillators_number//size
+        modd = oscillators_number%size
+        if rank < modd:
+            data = np.empty(divv+1)
+        else:
+            data = np.empty(divv)
+
+        if rank < modd:
+            for i in range(len(data)):
+                data[i] = (h* vfunc[ (divv+1)*rank + i ](t, rank,y[i]))
+        else:
+            for i in range(len(data)):
+                data[i] = (h* vfunc[ (divv)*rank + modd + i ](t, rank,y[i]))
+        k = np.empty(oscillators_number)
+        if rank==0:
+            part_length_first = [divv+1 for i in range(modd)]
+            part_length_second = [divv for i in range(size-modd)]
+            part_length = part_length_first + part_length_second
+            # смещение (первого элемента в отрезке) относительно начала
+            part_diplacement_first = [(divv+1)*i for i in range(modd)]
+            part_diplacement_second = [divv*i+modd for i in np.arange(modd, size)]
+            part_diplacement = part_diplacement_first + part_diplacement_second
+        comm.Gatherv(data, None if rank!=0 else [k, part_length, part_diplacement, MPI.DOUBLE])
+        #[1,4,0,3,2]
+        #[0,1,2,3,4]
+        comm.Bcast(k, root=0)
+        return k
+
+
+    class Pendulum:
+        def __init__(self, indicator):  # lambd -- A[i]
+            self.indicator = indicator
+
+        def __call__(self, t, point, phase_vector):
+            return phase_vector * self.indicator
+
+
+    oscillators_number = 11
+    test_phase_vector = [1 for i in range(oscillators_number)]
+    vfunc = [Pendulum(i) for i in range(oscillators_number)]
     """
-    d = 15      #number of equations
-    omega = []
-    for i in range(d):
-        omega += [random.uniform(-1,1)]   #[(i+1)**(-1.5)*10]
-
-    K = []
-    for i in range(d):
-        K += [0.2]#[random.uniform(0,0.5)]   #[(i+1)**2]
-
     vfunc = []
-    for nf in range(d): #nf - function number
-        #_omega, _K = omega[nf], K[nf]
-        def f(t, *theta):
-            _sum = 0
-            thetalist = [*theta]
-            for j in range(d):
-                _sum += math.sin(thetalist[j] - thetalist[nf])
-            return omega[nf] + K[nf] / d * _sum
-        vfunc.append(f)
-
-    initial_conditions = []               # theta[_i] in zero-time
-    for _i in range(d):
-        initial_conditions.append(0.4)  # [_i/2]
-
-    import matplotlib.pyplot as mpl
-    a = 0
-    b = 10
-    N = 100
-    x = [[] for i in range(d)] #x = [[],[],[], ...]
-    t = []
-    timer = Timer().start()                        ###
-
-    for i in range(d):
-        for e in runge(a,b,initial_conditions[i],N,vfunc[i],i):
-            x[i].append(e[1])
-            t.append(e[0]) # NOT AN ERROR
-    print("Elapsed time: %f s" % (timer.stop(),))  ### % floating point format
-    for i in range(d):
-        mpl.plot(t,x[i])
-    mpl.show()
+    for i in range(oscillators_number):
+        vfunc.append(lambda z,y,x:x*i)
     """
-    d = 15  # number of equations
-    omega = []
-    for i in range(d):
-        omega += [random.uniform(-1, 1)]  # [(i+1)**(-1.5)*10]
 
-    K = []
-    for i in range(d):
-        K += [0.2]  # [random.uniform(0,0.5)]   #[(i+1)**2]
 
-    vfunc = []
-    for nf in range(d):  # nf - function number
-        def f(t, nf, *theta):
-            _sum = 0
-            thetalist = [*theta]
-            for j in range(d):
-                _sum += math.sin(thetalist[j] - thetalist[nf])
-            return omega[nf] + K[nf] / d * _sum
-        vfunc.append(f)
+    k = kfunc(comm, size, rank, vfunc, 0.1, oscillators_number, 1, test_phase_vector)
+    print(k)
 
-    initial_conditions = []  # theta[_i] in zero-time
-    for _i in range(d):
-        initial_conditions.append(0.4)  # [_i/2]
-
-    import matplotlib.pyplot as mpl
-
-    a = 0
-    b = 10
-    N = 100
-    x = [[] for i in range(d)]  # x = [[],[],[], ...]
-    t = []
-    timer = Timer().start()  ###
-
-    for e in runge(a, b, initial_conditions, N, vfunc):
-        for i in range(d):
-            x[i].append(e[1][i])
-        t.append(e[0])  # NOT THE ERROR
-    print("Elapsed time: %f s" % (timer.stop(),))  ### % floating point format
-    for i in range(d):
-        mpl.plot(t, x[i])
-    mpl.show()
+#TODO still run, but didn't work right on full version,(run and work on test version) - make it work right

@@ -47,27 +47,7 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
         :return: k - one of four part of y - 4 phase vectors for calculus
         """
         #=========== paralleled part ==============#####################ERROR IS HERE
-        """
-        i = 0
-        point = rank
-        while point < oscillators_number:
-            i += 1
-            point += size
-        #print(i,' rank:',rank)
-        data = np.empty(i) #[,]
-
-        i = 0
-        point = rank
-        while point < oscillators_number:
-            try:
-                data[i] = (h * vfunc[point](t, point, y))  # *data - [1,2]
-            except:
-                quit()
-            point += size
-            i += 1
-        """
-        point = rank
-        #==============================
+        #==============================###size == amount of parts
         divv = oscillators_number//size
         modd = oscillators_number%size
         if rank < modd:
@@ -77,72 +57,57 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
 
         if rank < modd:
             for i in range(len(data)):
-                data[i] = (h* vfunc[ (divv+1)*rank + i ](t, point,y))
+                index0 = (divv + 1) * rank
+                data[i] = (h* vfunc[ index0+i ](None ,None ,y))
         else:
             for i in range(len(data)):
-                data[i] = (h* vfunc[ (divv)*rank + modd + i ](t, point,y))
+                index0 = (divv)*rank + modd
+                data[i] = (h* vfunc[ index0+i ](None, None, y))
 
         #================================
         k = np.empty(oscillators_number)
-        #[1,4]
-        #[0,3]
-        #[2]
+        #TODO Extract "if rank==0" gap out of kfunk and rewrite "if rank<modd" part
+        if rank==0:
+            part_length_first = [divv+1 for i in range(modd)]
+            part_length_second = [divv for i in range(size-modd)]
+            part_length = part_length_first + part_length_second
+            # смещение (первого элемента в отрезке) относительно начала
+            part_diplacement_first = [(divv+1)*i for i in range(modd)]
+            part_diplacement_second = [divv*i+modd for i in np.arange(modd, size)]
+            part_diplacement = part_diplacement_first + part_diplacement_second
 
-        comm.Gatherv(data, k, root=0)  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]#####################ERROR IS HERE
+        comm.Gatherv(data, None if rank!=0 else [k, part_length, part_diplacement, MPI.DOUBLE])  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]#####################ERROR IS HERE
         #[1,4,0,3,2]
         #[0,1,2,3,4]
-        #==========================================
-        """
-        data = []
-        point = rank
-        while point < oscillators_number:
-            print('kfunk while1 core' + str(rank))
-            data.append(h * vfunc[point](t, point, *y))  # *y - [1,2,3,4]
-            point += size
-        k = comm.gather(data, root=0)  # k = [[#data1], [#data1], [#data], ...]
-        """
-        #==========================================
-        """
-        k11 = []
-
-        for point in range(size):
-            j = 0
-            while True:
-                try:
-                    print('kfunk while2 core', rank, ' ', j, ' ',point)  # !!!!Исправь ПРИНТЫ !! смотреть здесь что не так для случая с одним ядром?
-                    print(k[point][j])
-                    k11.append(k[point][j])
-                    j += 1
-                except:
-                    break
-        """
-        k11 = k        # [1-[1,2,3,4],2-[1,2,3,4], 3-[1,2,3,4],..]
-        k11 = comm.bcast(k11, root=0)  # рассылаем обратно на все узлы конечный ответ
-        return k11   # TIS NUMPY ARRAY NOW
+        # [1-[1,2,3,4],2-[1,2,3,4], 3-[1,2,3,4],..]
+        comm.Bcast(k, root=0)  # рассылаем обратно на все узлы конечный ответ
+        return k   # TIS NUMPY ARRAY NOW
 
     for i in range(N):
         yield t, y
+        #y = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y)
+
         k1 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y)
 
-        yik2 = []
-        for j in range(oscillators_number):#элементы y:1        2         3
-            yik2.append(y[j] + k1[j]/2) #[[1,1,2,3],[2,1,2,3],[3,1,2,3]] - это yik2
-        k2 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik2)        #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
+        yik2 = [y[j] + k1[j]/2 for j in range(oscillators_number)]
+        k2 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t+h/2, yik2)
+        #элементы y:1        2         3
+        #[[1,1,2,3],[2,1,2,3],[3,1,2,3]] - это yik2
+        #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
 
-        yik3 = []
-        for j in range(oscillators_number):
-            yik3.append(y[j] + k2[j]/2)
-        k3 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik3)        #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
+        yik3 = [y[j] + k2[j]/2 for j in range(oscillators_number)]
+        k3 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t+h/2, yik3)        #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
 
-        yik4 = []
-        for j in range(oscillators_number):
-            yik4.append(y[j] + k3[j])
-        k4 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, yik4)        #k4 = [h*f(t + h, *yik4) for f in vfunc]
+        yik4 = [y[j] + k3[j] for j in range(oscillators_number)]
+        k4 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t+h, yik4)        #k4 = [h*f(t + h, *yik4) for f in vfunc]
 
         for j in range(oscillators_number):
             y[j] += (k1[j] + 2*k2[j] + 2*k3[j] + k4[j])/6
+
         t += h
     return t, y
+
+#TODO runge() work right with Euler method, use it for tests.
 
 if __name__ == '__main__':
     import math
@@ -178,3 +143,4 @@ if __name__ == '__main__':
     mpl.plot(t,x)
     mpl.plot(t,y)
     mpl.show()
+

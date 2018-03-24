@@ -2,11 +2,11 @@ import random
 import configparser
 
 
-def create_config(oscillators_number, filename='kuramoto_config.ini'):
+def create_config(lambd=2.5, oscillators_number=10, filename='kuramoto_config.ini'):
 
     config = {}
     config['oscillators_number'] = oscillators_number
-    config['lambd'] = 0.05
+    config['lambd'] = lambd
     config['omega_vector'] = [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)]
     config['Aij'] = [[(1 if i!=j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)]
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
