@@ -29,15 +29,22 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
     t = a               # время начинается с момента времени a
     y = initial_conditions # [1,2,3,4] # начальные условия для каждого уравнения, одно уравнение - один маятник
     ###oscillators_number = len(initial_conditions)  # количество уравнений// осцилляторов (было eqcount)
+    divv = oscillators_number // size
+    modd = oscillators_number % size
 
-    def kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y):
+    part_length_first = [divv + 1 for i in range(modd)]
+    part_length_second = [divv for i in range(size - modd)]
+    part_length = part_length_first + part_length_second
+    # смещение (первого элемента в отрезке) относительно начала
+    part_diplacement_first = [(divv + 1) * i for i in range(modd)]
+    part_diplacement_second = [divv * i + modd for i in np.arange(modd, size)]
+    part_diplacement = part_diplacement_first + part_diplacement_second
+
+    def compute_in_parallel(comm, vfunc, h, oscillators_number, t, y):
         """
         this function is paralleling runge method;
         NOW IT'S WORKING LONG -- DO SOMETHING;
         :param comm: comm = MPI.COMM_WORLD
-        :param size: size = comm.Get_size(); size of the claster
-        :param rank: rank = comm.Get_rank(); rank of the node
-
         :param vfunc: 1d vector of general equasions
         :param h: length of the segment of our timeline
         :param oscillators_number: constant; literal sense
@@ -48,33 +55,19 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
         """
         #=========== paralleled part ==============#####################ERROR IS HERE
         #==============================###size == amount of parts
-        divv = oscillators_number//size
-        modd = oscillators_number%size
         if rank < modd:
-            data = np.empty(divv+1)
+            data = np.empty(divv + 1)
+            for i in range(part_length[rank]):
+                data[i] = (h* vfunc[ part_diplacement[rank]+i ](None ,None ,y))
         else:
             data = np.empty(divv)
-
-        if rank < modd:
-            for i in range(len(data)):
-                index0 = (divv + 1) * rank
-                data[i] = (h* vfunc[ index0+i ](None ,None ,y))
-        else:
-            for i in range(len(data)):
-                index0 = (divv)*rank + modd
-                data[i] = (h* vfunc[ index0+i ](None, None, y))
+            for i in range(part_length[rank]):
+                data[i] = (h* vfunc[ part_diplacement[rank]+i ](None, None, y))
 
         #================================
         k = np.empty(oscillators_number)
         #TODO Extract "if rank==0" gap out of kfunk and rewrite "if rank<modd" part
-        if rank==0:
-            part_length_first = [divv+1 for i in range(modd)]
-            part_length_second = [divv for i in range(size-modd)]
-            part_length = part_length_first + part_length_second
-            # смещение (первого элемента в отрезке) относительно начала
-            part_diplacement_first = [(divv+1)*i for i in range(modd)]
-            part_diplacement_second = [divv*i+modd for i in np.arange(modd, size)]
-            part_diplacement = part_diplacement_first + part_diplacement_second
+
 
         comm.Gatherv(data, None if rank!=0 else [k, part_length, part_diplacement, MPI.DOUBLE])  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]#####################ERROR IS HERE
         #[1,4,0,3,2]
@@ -85,25 +78,25 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
 
     for i in range(N):
         yield t, y
-        #y = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y)
-
-        k1 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y)
+        y = compute_in_parallel(comm, vfunc, h, oscillators_number, t, y)
+        '''
+        k1 = compute_in_parallel(comm, vfunc, h, oscillators_number, t, y)
 
         yik2 = [y[j] + k1[j]/2 for j in range(oscillators_number)]
-        k2 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t+h/2, yik2)
+        k2 = compute_in_parallel(comm, vfunc, h, oscillators_number, t + h / 2, yik2)
         #элементы y:1        2         3
         #[[1,1,2,3],[2,1,2,3],[3,1,2,3]] - это yik2
         #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
 
         yik3 = [y[j] + k2[j]/2 for j in range(oscillators_number)]
-        k3 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t+h/2, yik3)        #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
+        k3 = compute_in_parallel(comm, vfunc, h, oscillators_number, t + h / 2, yik3)  #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
 
         yik4 = [y[j] + k3[j] for j in range(oscillators_number)]
-        k4 = kfunc(comm, size, rank, vfunc, h, oscillators_number, t+h, yik4)        #k4 = [h*f(t + h, *yik4) for f in vfunc]
+        k4 = compute_in_parallel(comm, vfunc, h, oscillators_number, t + h, yik4)  #k4 = [h*f(t + h, *yik4) for f in vfunc]
 
         for j in range(oscillators_number):
             y[j] += (k1[j] + 2*k2[j] + 2*k3[j] + k4[j])/6
-
+'''
         t += h
     return t, y
 
