@@ -66,7 +66,7 @@ def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
         if rank == 0:   #calculate
             timer = Timer().start()
 
-        pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator() #system with 1~10 pendulums
+        pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution() #system with 1~10 pendulums
 
         time_output_array_length = len(pendulum_time_output_array)
         pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
@@ -111,7 +111,7 @@ def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_num
 
         kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config)  # = i+1)    #loading
 
-        pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution_iterator()  # system with 1~10 pendulums
+        pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution()  # system with 1~10 pendulums
 
         time_output_array_length = len(pendulum_time_output_array)
         pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))

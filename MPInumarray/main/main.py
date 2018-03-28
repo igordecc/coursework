@@ -53,15 +53,7 @@ class Timer:
         self.t = time.perf_counter()-self.t
         return self.t
 
-
-if __name__ == '__main__':
-    from mpi4py import MPI
-    import numpy as np
-
-    comm = MPI.COMM_WORLD
-    size = comm.Get_size()  # количество узлов
-    rank = comm.Get_rank()  # номер узла
-
+'''
     def kfunc(comm, size, rank, vfunc, h, oscillators_number, t, y):
         divv = oscillators_number//size
         modd = oscillators_number%size
@@ -112,5 +104,39 @@ if __name__ == '__main__':
 
     k = kfunc(comm, size, rank, vfunc, 0.1, oscillators_number, 1, test_phase_vector)
     print(k)
+
+'''
+if __name__ == '__main__':
+    from mpi4py import MPI
+    import numpy as np
+
+    comm = MPI.COMM_WORLD
+    size = comm.Get_size()  # количество узлов
+    rank = comm.Get_rank()  # номер узла
+
+    def compute_partition(oscillators_number, size):
+        divv = oscillators_number // size
+        modd = oscillators_number % size
+
+        part_length_first = [divv + 1 for i in range(modd)]
+        part_length_second = [divv for i in range(size - modd)]
+        part_length = part_length_first + part_length_second
+
+        # смещение (первого элемента в отрезке) относительно начала
+        part_displacement_first = [(divv + 1) * i for i in range(modd)]
+        part_displacement_second = [divv * i + modd for i in np.arange(modd, size)]
+        part_displacement = part_displacement_first + part_displacement_second
+
+        return part_length, part_displacement
+
+    part_length, part_displacement = compute_partition(11, size)
+    print(part_length, part_displacement)
+
+
+    def compute_part(vfunc, h, t, y, part_length, part_displacement):
+        data = np.empty(part_length[rank])
+        for i in range(part_length[rank]):
+            data[i] = (h * vfunc[part_displacement[rank] + i](t, y))
+        return data  # TIS NUMPY ARRAY NOW
 
 #TODO still run, but didn't work right on full version,(run and work on test version) - make it work right

@@ -131,17 +131,17 @@ class KuramotoSystem:
         self.vfunc = []
         #print('omega vector :', omega_vector)
         for i in range(self.oscillators_number):
-            self.vfunc.append(Pendulum(lambd, A, i, omega_vector[i], self.oscillators_number))
+            self.vfunc.append(Pendulum(lambd, A, i, omega_vector, self.oscillators_number))
 
-    def get_solution_iterator(self):
+    def get_solution(self):
         """
         :return: Runge-Kutt function result////, wich is ITERATOR
         """
         pendulum_time_output_array = []     #replace by numpy array!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         pendulum_phase_output_array = []
-        for array in rk4.runge(self.t0, self.tf, self.phase_vector, self.N, self.vfunc, self.oscillators_number): #!!!!!!!!!!!!!!!
-            pendulum_time_output_array.append(array[0])
-            for e in array[1]:
+        for t,phase in rk4.runge(self.t0, self.tf, self.phase_vector, self.N, self.vfunc, self.oscillators_number): #!!!!!!!!!!!!!!!
+            pendulum_time_output_array.append(t)
+            for e in phase:
                 pendulum_phase_output_array.append(e)
         return pendulum_time_output_array, pendulum_phase_output_array
 
@@ -151,7 +151,7 @@ class KuramotoSystem:
 
 
 class Pendulum:
-    def __init__(self, lambd, A, pendulum_index, omega, oscillators_number):  # lambd -- A[i]
+    def __init__(self, lambd, A, pendulum_index, omega_vector, oscillators_number):  # lambd -- A[i]
         """
         Parameters will add by the KuramotoSystem class,
         NOT BY USER.
@@ -162,7 +162,7 @@ class Pendulum:
         """
         self.lambd = lambd
         self.pendulum_index = pendulum_index
-        self.omega = omega
+        self.omega_vector = omega_vector
         self.A = A
         self.oscillators_number = oscillators_number
 
@@ -180,9 +180,9 @@ class Pendulum:
         my_phase = phase_vector[self.pendulum_index]
         for j in range(self.oscillators_number):
             summ += self.A[self.pendulum_index][j] * math.sin( phase_vector[j] - my_phase )
-        return self.omega + self.lambd * summ/self.oscillators_number
+        return self.omega_vector[self.pendulum_index] + self.lambd * summ/self.oscillators_number
 
-    def __call__(self, t, point , phase_vector):
+    def __call__(self, t, phase_vector):
         """
         will work inside Runge-Kutte method,
         NOT BY USER
