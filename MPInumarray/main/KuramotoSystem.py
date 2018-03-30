@@ -1,9 +1,10 @@
 import math
 import rk4
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-size = comm.Get_size()  # количество узлов
-rank = comm.Get_rank()  # номер узла
+# from mpi4py import MPI
+# comm = MPI.COMM_WORLD
+# size = comm.Get_size()  # количество узлов
+# rank = comm.Get_rank()  # номер узла
+
 """
 Concept:
 There is Kuramoto System, wich include Pendula.

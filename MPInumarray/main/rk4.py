@@ -12,7 +12,7 @@ import numpy as np
 
 
 def compute_part(vfunc, h, t, y, part_length, part_displacement):
-    data = np.empty(part_length[rank])
+    data = np.empty(part_length[rank], dtype=float)
     for i in range(part_length[rank]):
         data[i] = (h * vfunc[part_displacement[rank] + i](t, y))
     return data  # TIS NUMPY ARRAY NOW
@@ -22,15 +22,19 @@ def compute_partition(oscillators_number, size):
     modd = oscillators_number % size
 
     part_length_first = [divv + 1 for i in range(modd)]
-    part_length_second = [divv for i in range(size - modd)]
+    part_length_second = [divv for i in range(size - modd)] ####&&&
     part_length = part_length_first + part_length_second
 
     # смещение (первого элемента в отрезке) относительно начала
     part_displacement_first = [(divv + 1) * i for i in range(modd)]
-    part_displacement_second = [divv * i + modd for i in np.arange(modd, size)]
+    part_displacement_second = [divv * i + modd for i in range(modd, size)]
     part_displacement = part_displacement_first + part_displacement_second
 
     return part_length, part_displacement
+
+def update(full_data, part_data, part_length, part_displacement):
+    comm.Gatherv(part_data, None if rank != 0 else [full_data, part_length, part_displacement, MPI.DOUBLE])  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]#####################ERROR IS HERE
+    comm.Bcast(full_data, root=0)
 
 
 def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
@@ -49,41 +53,42 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
     # N это количество разбиений этого отрезка
     h = (b - a) / N     # h это шаг разбиения
     t = a               # время начинается с момента времени a
-    y = np.array(initial_conditions) # [1,2,3,4] # начальные условия для каждого уравнения, одно уравнение - один маятник
-    ###oscillators_number = len(initial_conditions)  # количество уравнений// осцилляторов (было eqcount)
-    k = np.empty(oscillators_number)
-
+    y = np.array(initial_conditions, dtype=float) # [1,2,3,4] # начальные условия для каждого уравнения, одно уравнение - один маятник
+    k = np.empty(oscillators_number, dtype=float)
     part_length, part_displacement = compute_partition(oscillators_number, size)
-
 
     for i in range(N):
         yield t, y
+        """#method EULERA
         data = compute_part(vfunc, h, t, y, part_length, part_displacement)
-
-        comm.Gatherv(data, None if rank != 0 else [k, part_length, part_displacement, MPI.DOUBLE])  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]#####################ERROR IS HERE
-        # [1,4,0,3,2]
-        # [0,1,2,3,4]
-        # [1-[1,2,3,4],2-[1,2,3,4], 3-[1,2,3,4],..]
-        comm.Bcast(k, root=0)  # рассылаем обратно на все узлы конечный ответ
-        '''
-        k1 = compute_part(comm, vfunc, h, oscillators_number, t, y)
+        update(k, data, part_length, part_displacement)
+        """
+        data1 = compute_part(vfunc, h, t, y, part_length, part_displacement)
+        k1 = np.empty(oscillators_number, dtype=float)
+        update(k1, data1, part_length, part_displacement)
 
         yik2 = [y[j] + k1[j]/2 for j in range(oscillators_number)]
-        k2 = compute_part(comm, vfunc, h, oscillators_number, t + h / 2, yik2)
+        data2 = compute_part(vfunc, h, t+h/2, yik2, part_length, part_displacement)
+        k2 = np.empty(oscillators_number, dtype=float)
+        update(k2, data2, part_length, part_displacement)
         #элементы y:1        2         3
         #[[1,1,2,3],[2,1,2,3],[3,1,2,3]] - это yik2
         #k2 = [h*f(t + h/2, *yik2) for f in vfunc]
 
         yik3 = [y[j] + k2[j]/2 for j in range(oscillators_number)]
-        k3 = compute_part(comm, vfunc, h, oscillators_number, t + h / 2, yik3)  #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
+        data3 = compute_part(vfunc, h, t+h/2, yik3, part_length, part_displacement) #k3 = [h*f(t + h/2, *yik3) for f in vfunc]
+        k3 = np.empty(oscillators_number, dtype=float)
+        update(k3, data3, part_length, part_displacement)
 
         yik4 = [y[j] + k3[j] for j in range(oscillators_number)]
-        k4 = compute_part(comm, vfunc, h, oscillators_number, t + h, yik4)  #k4 = [h*f(t + h, *yik4) for f in vfunc]
+        data4 = compute_part(vfunc, h, t+h, yik4, part_length, part_displacement)  #k4 = [h*f(t + h, *yik4) for f in vfunc]
+        k4 = np.empty(oscillators_number, dtype=float)
+        update(k4, data4, part_length, part_displacement)
 
         for j in range(oscillators_number):
             y[j] += (k1[j] + 2*k2[j] + 2*k3[j] + k4[j])/6
-        '''
-        y += k
+
+        #y += k
         t += h
     return t, y
 

@@ -60,7 +60,11 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
 def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
 
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        config = create_config(oscillators_number=oscillators_number, filename=None)
+        config = None
+        if rank == 0:
+            config = create_config(oscillators_number=oscillators_number, filename=None)
+        config= comm.bcast(config, root=0)
+        print(config['omega_vector'])
         kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config) #= i+1)    #loading
 
         if rank == 0:   #calculate
@@ -107,8 +111,10 @@ def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_num
         timer = Timer().start()
 
     for _lambda in lambd_out:
-        config = create_config(lambd=_lambda, oscillators_number = oscillators_number, filename=None)
-
+        config = None
+        if rank == 0:
+            config = create_config(lambd=_lambda, oscillators_number = oscillators_number, filename=None)
+        config = comm.bcast(config, root=0)
         kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config)  # = i+1)    #loading
 
         pendulum_time_output_array, pendulum_phase_output_array = kuramotosystem_class_exemplar.get_solution()  # system with 1~10 pendulums
