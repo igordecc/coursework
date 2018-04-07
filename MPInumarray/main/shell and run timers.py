@@ -1,10 +1,9 @@
 import KuramotoSystem as cls
-import configparser
 from config_creator import create_config
 import numpy as np
 import math
 import time
-import json
+
 
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
@@ -57,14 +56,13 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
 
     return r
 
-def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
+def run_K_model(flag, osc_min=1, osc_max=101, osc_step=10):
 
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
         config = None
         if rank == 0:
             config = create_config(oscillators_number=oscillators_number, filename=None)
         config= comm.bcast(config, root=0)
-        print(config['omega_vector'])
         kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config) #= i+1)    #loading
 
         if rank == 0:   #calculate
@@ -82,7 +80,7 @@ def run_K_model(flag, osc_min=1, osc_max=100, osc_step=10):
                 timer_result = timer.stop()
                 print("Calculate time", timer_result)
                 with open("test_txt//time.txt", "a") as myfile: #timer stuff
-                    myfile.write(str(oscillators_number)+" "+str(timer_result)+"\n")
+                    myfile.write(str(timer_result)+"\n") #str(oscillators_number)+" "+
             if "phase" in flag:
                 with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:  #plot: phase(time)
                     for i in range(time_output_array_length):
@@ -124,7 +122,8 @@ def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_num
         pendulum_phase_output_array = pendulum_phase_output_array % (2 * math.pi)
         pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])  ###### cut this string out for radian graph
         r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
-        r_out.append( r_array[-1])
+        n = 1000
+        r_out.append( sum(r_array[-n:])/n)
         # ------------calculating r-------------
         #r_out.append( sum(r_array[-5:-1])/len(r_array[-5:-1]) )
 
@@ -154,9 +153,9 @@ if __name__ == '__main__':
     """
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
-    run_K_model(flag, osc_min=1, osc_max=31, osc_step=10)
+    run_K_model(flag, osc_min=1, osc_max=101, osc_step=10)
     #run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
-    #run_RLambd_model(flag, lmb_min=0, lmb_max=1.5, lmb_step=0.1, oscillators_number = 10)
+    #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)
 
 
 

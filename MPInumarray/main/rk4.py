@@ -59,9 +59,10 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
 
     for i in range(N):
         yield t, y
-        """#method EULERA
+        #method EULERA
         data = compute_part(vfunc, h, t, y, part_length, part_displacement)
         update(k, data, part_length, part_displacement)
+
         """
         data1 = compute_part(vfunc, h, t, y, part_length, part_displacement)
         k1 = np.empty(oscillators_number, dtype=float)
@@ -87,8 +88,8 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
 
         for j in range(oscillators_number):
             y[j] += (k1[j] + 2*k2[j] + 2*k3[j] + k4[j])/6
-
-        #y += k
+        """
+        y += k  #method EULERA
         t += h
     return t, y
 

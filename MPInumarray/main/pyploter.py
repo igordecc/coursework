@@ -2,7 +2,7 @@ import matplotlib.pyplot as pp
 import numpy as np
 #pyploter.py  plot a graphics of lamdas or r parameter
 if __name__ == '__main__':
-    filename ='testr11.txt'      # input('filename:')
+    filename ='time.txt'      # input('filename:')
     with open('test_txt//'+filename, "r") as myfile:
         data_index_array = []
         data_array = []
