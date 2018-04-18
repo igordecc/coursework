@@ -6,40 +6,31 @@ import pyopencl as cl
 import numpy as np
 from time import perf_counter
 
+#A[self.pendulum_index][j] * sin( phase_vector[j] - my_phase )
+
+
 kernel_src_main = """
-
-    float f(float x)
+    kernel void  kuramoto_equation(
+        global const float* omega_vector
+        const float lambda,
+        global const float* A, 
+        global float* phase_vector, 
+        global float* vector_s
+        )
     {
-        return sin(x);
-    }
-
-    kernel void metod_trapeziy(const float a, const float h, global float* vector_s)
-    {
-        local float local_sum[GROUP_SIZE];
-        const int local_i = get_local_id(0);
         const int global_i = get_global_id(0);
-
-        const float x = a + h * global_i;
-        local_sum[local_i] = (f(x) + f(x+h))*h/2;
-
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        __attribute__((opencl_unroll_hint(8)))
-        for (int i = 1; i <= GROUP_SIZE/2; i <<= 1 )
-        { 
-            if (local_i % (i << 1) == 0)
-            {
-                local_sum[local_i] += local_sum[local_i+i]; 
-            }   
-            barrier(CLK_LOCAL_MEM_FENCE);
-        }
-
-        if (local_i == 0)
+        const int N = get_global_size(0);
+        float summ = 0;
+        
+        for (int j = 0; j < N; ++j)
         {
-            vector_s[global_i/GROUP_SIZE] = local_sum[0];
+            summ += A[global_i*N+j] * sin( phase_vector[j] - phase_vector[global_i] ); 
         }
+        summ = lambda*summ + omega_vector[i];
+        vector_s[global_i] = summ;
+        
     }"""
-def ad(kernel_src=kernel_src_main, a=0, b=3.14, N=16*10000000):
+def ad(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0, b=10, N=16*10000000,N_parts=16*10000000):
     """
     функция, вычисляющая по интеграл заданной функции на GPU с использованием локальных групп
     вычисляем вектор разбиения отрезка [a,b] и вектор для вывода результата
@@ -60,8 +51,8 @@ def ad(kernel_src=kernel_src_main, a=0, b=3.14, N=16*10000000):
     # TODO разбить на 2 части
     # TODO - наружняя часть принимает все начальные значения и возращает вектор векторов6565 фаз N осцилляторов (эволюция фаз N осцилляторов во времени) и вектор времени;
     # TODO - внутренняя часть принимает все начальные значения и момент времени, и возвращает вектор фаз N осцилляторов в этот момент времени
-    N = N*16
-    h = abs(a - b) / N
+    N = N*16 # теперь это число осцилляторов
+    h = abs(a - b) / N_parts
 
     platformsNum = 0    #определяем объект устройства (девайса)
     deviceNum = 0
@@ -72,7 +63,7 @@ def ad(kernel_src=kernel_src_main, a=0, b=3.14, N=16*10000000):
 
     program = cl.Program(context, kernel_src).build('-cl-std=CL2.0 -D GROUP_SIZE=256')  #создаём программу
 
-    kernel = cl.Kernel(program, name='metod_trapeziy')  #создаём кернель
+    kernel = cl.Kernel(program, name='kuramoto_equation')  #создаём кернель
 
     kernel.set_scalar_arg_dtypes((np.float32, np.float32, None))    #запускаем кернель
 
@@ -83,8 +74,9 @@ def ad(kernel_src=kernel_src_main, a=0, b=3.14, N=16*10000000):
     out_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, size_of_buff)
 
     time_queue = perf_counter()
+    # TODO ============== обернуть в цикл здесь! подумать о и передаче phase_vector строки на каждом шаге цикла
+    event = kernel(queue, [global_work_size], [local_work_size], omega_vector, lambda_c, A, phase_vector, out_buffer) #vector_s = out_buffer
 
-    event = kernel(queue, [global_work_size], [local_work_size], a, h, out_buffer)
     #time_kernel = event.get_profiling_info(cl.profiling_info.END)-event.get_profiling_info(cl.profiling_info.START)
 
     vectors = np.zeros(global_work_size//local_work_size, dtype=np.float32) #считываем результат (2-й баффер)  в вектор площадей s
