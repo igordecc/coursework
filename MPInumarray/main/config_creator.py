@@ -2,7 +2,7 @@ import random
 import configparser
 
 
-def create_config(lambd=0.14, oscillators_number=10, filename='kuramoto_config.ini'):
+def create_config(lambd=0.34, oscillators_number=10, filename='kuramoto_config.ini'):
 
     config = {}
     config['oscillators_number'] = oscillators_number

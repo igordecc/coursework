@@ -16,7 +16,8 @@ kernel void  kuramoto_equation(
     const global float* omega_vector,
     const global float* A, 
     const global float* phase_vector, 
-    global float* vector_s
+    global float* vector_s,
+    global float* vector_transformed
     )
 {
     const int id = get_global_id(0);
@@ -28,9 +29,11 @@ kernel void  kuramoto_equation(
     {
         summ += A[j] * sin( phase_vector[j] - phase_vector[id] ); 
     }
-    summ = lambda*summ + omega_vector[id];
+    summ = lambda*summ/N + omega_vector[id];
     
-    vector_s[id] = summ * h;
+    summ = phase_vector[id] + summ * h;
+    vector_transformed[id] = summ;
+    vector_s[id] = sin( fmod(summ, 2 * M_PI_F) );
     
 }"""
 
@@ -79,23 +82,26 @@ def ad(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0,
     cl.enqueue_copy(queue, A_buffer, A)
 
     out_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, size=4*oscillators_number) #size - size of buffer
+    temp_out_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY, size=4*oscillators_number) #size - size of buffer
 
 
     time_queue = perf_counter()
-    # TODO ============== обернуть в цикл здесь! подумать о и передаче phase_vector строки на каждом шаге цикла
-    for i in range(N_parts-1):
-        cl.enqueue_copy(queue, phase_vector_buffer, phase_vector[i])
+    cl.enqueue_copy(queue, phase_vector_buffer, phase_vector[0])
+    for i in range(N_parts):
         event = kernel(queue, [oscillators_number,], None,
                        np.float32(h),
                        np.float32(lambda_c),
                        omega_vector_buffer,
                        A_buffer,
                        phase_vector_buffer,
-                       out_buffer) #vector_s = out_buffer
+                       out_buffer,
+                       temp_out_buffer
+                       ) #vector_s = out_buffer
 
         #time_kernel = event.get_profiling_info(cl.profiling_info.END)-event.get_profiling_info(cl.profiling_info.START)
 
-        cl.enqueue_copy(queue, phase_vector[i+1], out_buffer)
+        cl.enqueue_copy(queue, phase_vector_buffer, temp_out_buffer)
+        cl.enqueue_copy(queue, phase_vector[i], out_buffer)
 
 
     time_queue = perf_counter() - time_queue
