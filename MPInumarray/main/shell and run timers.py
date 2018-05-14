@@ -1,14 +1,20 @@
-import KuramotoSystem as cls
 from config_creator import create_config
 import numpy as np
 import math
 import time
+from avv3_exper_v2 import ad
 
+try:
+    from mpi4py import MPI
+    import KuramotoSystem as cls
+    comm = MPI.COMM_WORLD
+    size = comm.Get_size()  # количество узлов
+    rank = comm.Get_rank()  # номер узла
+except:
+    import sys
+    rank=0
+    print("rk4 running without mpi", file=sys.stderr)
 
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-size = comm.Get_size()  # количество узлов
-rank = comm.Get_rank()  # номер узла
 
 
 class Timer:
@@ -90,17 +96,7 @@ def run_K_model(flag, osc_min=1, osc_max=101, osc_step=10):
                 with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile: #plot: r(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(pendulum_time_output_array[i]) + " " + str(r[i]) + "\n")
-        '''----------its another progect----------#TODO plot r(lambda)  lambda~~all_coupling_map
-                   lambdamin = 0
-                   lamdamax = 2.5
-                   step = 0.05
-                   for i in range(lambdamin,lamdamax, step):
-                       #loading
-                       kuramotosystem_class_exemplar = load_kuramotosystem_from_config(config_filename, oscillators_number) #system with 10 pendulums, ONLY 10!
 
-                       #calculate
-
-                   '''
 
 def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number = 10):
     r_out = []
@@ -144,6 +140,41 @@ def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_num
 
         ...
 
+def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
+    #osc: oscillators number
+
+    for oscillators_number in np.arange(osc_min, osc_max, osc_step):
+        timer = Timer().start()
+        config = create_config(oscillators_number=oscillators_number, filename=None)
+
+        phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
+        phase_vector[0] = config['phase_vector']
+
+        omega_vector = np.array(config['omega_vector'], dtype=np.float32)
+        Aij = np.array(config['Aij'], dtype=np.float32)
+
+        pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
+        time_output_array_length = config['N']
+
+        timer_result = timer.stop()
+        if rank == 0:  # write in file
+            if "time" in flag:
+                print("Calculate time", timer_result)
+                with open("test_txt//time.txt", "a") as myfile:  # timer stuff
+                    myfile.write(str(timer_result) + "\n")  # str(oscillators_number)+" "+
+            if "phase" in flag:
+                with open("test_txt//test" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: phase(time)
+                    for i in range(time_output_array_length):
+                        myfile.write(str(config['h']*i) + " " + " ".join(str(x) for x in pendulum_phase_output_array[i]) + "\n")
+            if "r" in flag:  # write in file
+                r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)  # ------------calculating r(t)-------------
+                with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
+                    for i in range(time_output_array_length):
+                        myfile.write(str(config['h']*i) + " " + str(r[i]) + "\n")
+
+def run_OCL_RLambd(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number = 10):
+    ...
+
 if __name__ == '__main__':
     flag = {"time","phase","r"}     #flag = {"time", "phase", "r"}
     """
@@ -153,7 +184,9 @@ if __name__ == '__main__':
     """
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
-    run_K_model(flag, osc_min=1, osc_max=101, osc_step=10)
+    run_OCL(flag, osc_min=1, osc_max=101, osc_step=10)
+
+
     #run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
     #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)
 

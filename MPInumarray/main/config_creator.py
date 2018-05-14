@@ -13,6 +13,7 @@ def create_config(lambd=0.14, oscillators_number=10, filename='kuramoto_config.i
     config['t0'] = 0
     config['tf'] = 200
     config['N'] = 2000
+    config['h'] = (config['tf']-config['t0'])/config['N']
 
     if filename is not None:
         config_root = configparser.ConfigParser()
