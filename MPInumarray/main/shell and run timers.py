@@ -144,7 +144,8 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
     #osc: oscillators number
 
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        timer = Timer().start()
+        if rank == 0:
+            timer = Timer().start()
         config = create_config(oscillators_number=oscillators_number, filename=None)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
@@ -173,6 +174,40 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
                         myfile.write(str(config['h']*i) + " " + str(r[i]) + "\n")
 
 def run_OCL_RLambd(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number = 10):
+    r_out = []
+    lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
+
+    if rank == 0:
+        timer = Timer().start()
+
+    for _lambda in lambd_out:
+        config = create_config(lambd=_lambda, oscillators_number=oscillators_number, filename=None)
+
+        phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
+        phase_vector[0] = config['phase_vector']
+
+        omega_vector = np.array(config['omega_vector'], dtype=np.float32)
+        Aij = np.array(config['Aij'], dtype=np.float32)
+
+        pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
+        time_output_array_length = config['N']
+        r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
+        n = 1000
+        r_out.append( sum(r_array[-n:])/n)
+
+    if rank==0 :     #write in file
+        if "time" in flag:
+            timer_result = timer.stop()
+            print("Calculate time", timer_result)
+            with open("test_txt//time_r(lambda).txt", "w") as myfile:  # timer stuff
+                myfile.write(str(oscillators_number) + " " + str(timer_result) + "\n")
+        if "r" in flag:  # write in file
+            with open("test_txt//test_r(lambda).txt", "w") as myfile:  # plot: r(time)
+                for i in range(len(r_out)):
+                    myfile.write(str(lambd_out[i]) + " " + str(r_out[i]) + "\n")
+            with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
+                for i in range(time_output_array_length):
+                    myfile.write(str(config['h']*i) + " " + str(r_array[i]) + "\n")
     ...
 
 if __name__ == '__main__':
@@ -184,8 +219,8 @@ if __name__ == '__main__':
     """
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
-    run_OCL(flag, osc_min=1, osc_max=101, osc_step=10)
-
+    #run_OCL(flag, osc_min=1, osc_max=101, osc_step=10)
+    run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.04, oscillators_number=10)
 
     #run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
     #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)
