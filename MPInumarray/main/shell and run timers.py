@@ -144,8 +144,6 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
     #osc: oscillators number
 
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        if rank == 0:
-            timer = Timer().start()
         config = create_config(oscillators_number=oscillators_number, filename=None)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
@@ -153,16 +151,17 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
 
         omega_vector = np.array(config['omega_vector'], dtype=np.float32)
         Aij = np.array(config['Aij'], dtype=np.float32)
-
+        if rank == 0:
+            timer = Timer().start()
         pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
         time_output_array_length = config['N']
 
-        timer_result = timer.stop()
         if rank == 0:  # write in file
+            timer_result = timer.stop()
             if "time" in flag:
                 print("Calculate time", timer_result)
                 with open("test_txt//time.txt", "a") as myfile:  # timer stuff
-                    myfile.write(str(timer_result) + "\n")  # str(oscillators_number)+" "+
+                    myfile.write(str(oscillators_number)+" "+str(timer_result) + "\n")  # str(oscillators_number)+" "+
             if "phase" in flag:
                 with open("test_txt//test" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: phase(time)
                     for i in range(time_output_array_length):
@@ -172,6 +171,9 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
                 with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(config['h']*i) + " " + str(r[i]) + "\n")
+# заметка - генератор конфига паралелиться не будет - программа готова! дальше работа над дипломной! и дописание небходимых возможностей подсчёта
+#TODO подсчитать время генерации конфига и построить график
+#TODO создать графики и перенести их в дипломную
 
 def run_OCL_RLambd(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number = 10):
     r_out = []
@@ -220,7 +222,9 @@ if __name__ == '__main__':
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
     #run_OCL(flag, osc_min=1, osc_max=101, osc_step=10)
-    run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.04, oscillators_number=10)
+    #run_OCL(flag, osc_min=100, osc_max=1000, osc_step=100)
+    run_OCL(flag, osc_min=1000, osc_max=10001, osc_step=1000)
+    #run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.04, oscillators_number=10)
 
     #run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
     #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)

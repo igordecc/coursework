@@ -36,7 +36,6 @@ def update(full_data, part_data, part_length, part_displacement):
     comm.Gatherv(part_data, None if rank != 0 else [full_data, part_length, part_displacement, MPI.DOUBLE])  # TIS NUMPY ARRAY NOW  k = [[#data1], [#data1], [#data], ...]#####################ERROR IS HERE
     comm.Bcast(full_data, root=0)
 
-
 def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
     """
     Solve differential equation system using Runge-Kutt 4th order method
