@@ -2,7 +2,7 @@ import random
 import configparser
 
 
-def create_config(lambd=0.34, oscillators_number=10, filename='kuramoto_config.ini'):
+def create_config(lambd=2.5, oscillators_number=10, filename='kuramoto_config.ini'):
 
     config = {}
     config['oscillators_number'] = oscillators_number
@@ -12,7 +12,7 @@ def create_config(lambd=0.34, oscillators_number=10, filename='kuramoto_config.i
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
     config['t0'] = 0
     config['tf'] = 200
-    config['N'] = 2000
+    config['N'] = 200
     config['h'] = (config['tf']-config['t0'])/config['N']
 
     if filename is not None:

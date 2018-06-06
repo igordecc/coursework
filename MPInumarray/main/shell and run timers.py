@@ -2,7 +2,13 @@ from config_creator import create_config
 import numpy as np
 import math
 import time
-from avv3_exper_v2 import ad
+
+try:
+    from avv3_exper_v2 import ad
+except:
+    import sys
+    rank=0
+    print("shell running without opencl", file=sys.stderr)
 
 try:
     from mpi4py import MPI
@@ -118,7 +124,7 @@ def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_num
         pendulum_phase_output_array = pendulum_phase_output_array % (2 * math.pi)
         pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])  ###### cut this string out for radian graph
         r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
-        n = 1000
+        n = int(len(r_array) / 2)
         r_out.append( sum(r_array[-n:])/n)
         # ------------calculating r-------------
         #r_out.append( sum(r_array[-5:-1])/len(r_array[-5:-1]) )
@@ -221,12 +227,14 @@ if __name__ == '__main__':
     """
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
-    #run_OCL(flag, osc_min=1, osc_max=101, osc_step=10)
+    #run_OCL(flag, osc_min=1, osc_max=20, osc_step=10)
     #run_OCL(flag, osc_min=100, osc_max=1000, osc_step=100)
-    run_OCL(flag, osc_min=1000, osc_max=10001, osc_step=1000)
-    #run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.04, oscillators_number=10)
+    #run_OCL(flag, osc_min=1, osc_max=30, osc_step=19)
+    #run_OCL(flag, osc_min=1000, osc_max=1100, osc_step=100)
+    #run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number=10)
 
-    #run_K_model(flag, osc_min=100, osc_max=1000, osc_step=100)
+    run_K_model(flag, osc_min=10, osc_max=11, osc_step=100)
+    #run_K_model(flag, osc_min=1000, osc_max=1100, osc_step=100)
     #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)
 
 
