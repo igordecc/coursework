@@ -229,12 +229,21 @@ if __name__ == '__main__':
         ...
     #run_OCL(flag, osc_min=1, osc_max=20, osc_step=10)
     #run_OCL(flag, osc_min=100, osc_max=1000, osc_step=100)
-    #run_OCL(flag, osc_min=1, osc_max=30, osc_step=19)
-    #run_OCL(flag, osc_min=1000, osc_max=1100, osc_step=100)
     #run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number=10)
 
-    run_K_model(flag, osc_min=10, osc_max=11, osc_step=100)
+
+    #Note: change N in config creator: from 200 to 2000
+    #Note: Look for time.txt in ./test_txt
+    # ====performance OCL tests==============
+    #run_OCL(flag, osc_min=10, osc_max=30, osc_step=20)
+    #run_OCL(flag, osc_min=1000, osc_max=1100, osc_step=100)
+    #==================
+
+    #====performance MPI tests==============
+    #run_K_model(flag, osc_min=10, osc_max=11, osc_step=100)
     #run_K_model(flag, osc_min=1000, osc_max=1100, osc_step=100)
+    #===================
+
     #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)
 
 
