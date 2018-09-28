@@ -84,7 +84,9 @@ def run_K_model(flag, osc_min=1, osc_max=101, osc_step=10):
 
         time_output_array_length = len(pendulum_time_output_array)
         pendulum_phase_output_array = np.array(pendulum_phase_output_array).reshape((time_output_array_length, oscillators_number))
-        pendulum_phase_output_array = pendulum_phase_output_array % (2*math.pi)
+
+        pendulum_phase_output_array = (pendulum_phase_output_array % (2*math.pi))
+
         pendulum_phase_output_array = np.array([[math.sin(i) for i in e] for e in pendulum_phase_output_array])     ###### cut this string out for radian graph
 
         if rank==0 :     #write in file
@@ -227,24 +229,25 @@ if __name__ == '__main__':
     """
     with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
-    #run_OCL(flag, osc_min=1, osc_max=20, osc_step=10)
-    #run_OCL(flag, osc_min=100, osc_max=1000, osc_step=100)
-    #run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number=10)
+    #run_OCL(flag, osc_min=10, osc_max=20, osc_step=10)
+    #run_OCL(flag, osc_min=5000, osc_max=10000, osc_step=100)
+    #run_OCL_RLambd(flag, lmb_min=0, lmb_max=0.4, lmb_step=0.01, oscillators_number=10)
 
 
     #Note: change N in config creator: from 200 to 2000
     #Note: Look for time.txt in ./test_txt
+
     # ====performance OCL tests==============
     #run_OCL(flag, osc_min=10, osc_max=30, osc_step=20)
     #run_OCL(flag, osc_min=1000, osc_max=1100, osc_step=100)
     #==================
 
     #====performance MPI tests==============
-    #run_K_model(flag, osc_min=10, osc_max=11, osc_step=100)
+    run_K_model(flag, osc_min=100, osc_max=1000, osc_step=20)
     #run_K_model(flag, osc_min=1000, osc_max=1100, osc_step=100)
     #===================
 
-    #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.01, oscillators_number = 10)
+    #run_RLambd_model(flag, lmb_min=0, lmb_max=0.7, lmb_step=0.001, oscillators_number = 10)
 
 
 

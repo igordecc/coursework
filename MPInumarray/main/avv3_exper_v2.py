@@ -33,7 +33,7 @@ kernel void  kuramoto_equation(
     
     summ = phase_vector[id] + summ * h;
     vector_transformed[id] = summ;
-    vector_s[id] = sin( fmod(summ, 2 * M_PI_F) );
+    vector_s[id] = sin( fmod(summ,  2*M_PI_F) );
     
 }"""
 
@@ -87,6 +87,7 @@ def ad(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0,
 
     time_queue = perf_counter()
     cl.enqueue_copy(queue, phase_vector_buffer, phase_vector[0])
+    # here starts actual calculating
     for i in range(N_parts):
         event = kernel(queue, [oscillators_number,], None,
                        np.float32(h),

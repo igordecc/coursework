@@ -2,16 +2,30 @@ import random
 import configparser
 
 
-def create_config(lambd=2.5, oscillators_number=10, filename='kuramoto_config.ini'):
+def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.ini', topology="fullyConnected"):
+    """
 
+    :param lambd:
+    :param oscillators_number:
+    :param filename:
+    :param topology: fullyConnected, random, freeScaling, smallWorld.
+    :return: config dictionary
+    """
     config = {}
     config['oscillators_number'] = oscillators_number
     config['lambd'] = lambd
     config['omega_vector'] = [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)]
-    config['Aij'] = [[(1 if i!=j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)]
+    connectionProbability = 0.6     # probability of random connections
+    topologydict = {
+        "fullyConnected": [[(1 if i != j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)],
+        "random": [[(random.choices([1, 0], [connectionProbability, 1-connectionProbability]) if (i != j) else 0) for j in range(oscillators_number)] for i in range(oscillators_number)],
+        "freeScaling": [],
+        "smallWorld": [],
+    }
+    config['Aij'] = topologydict[topology]
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
     config['t0'] = 0
-    config['tf'] = 200
+    config['tf'] = 100
     config['N'] = 200
     config['h'] = (config['tf']-config['t0'])/config['N']
 
