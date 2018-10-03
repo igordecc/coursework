@@ -1,10 +1,12 @@
 import random
 import configparser
+import networkx
 
 
-def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.ini', topology="fullyConnected"):
+def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.ini', topology="smallWorld"):
     """
 
+    :param topology:
     :param lambd:
     :param oscillators_number:
     :param filename:
@@ -15,14 +17,16 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
     config['oscillators_number'] = oscillators_number
     config['lambd'] = lambd
     config['omega_vector'] = [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)]
+
     connectionProbability = 0.6     # probability of random connections
+    neighbours = 4
     topologydict = {
         "fullyConnected": [[(1 if i != j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)],
-        "random": [[(random.choices([1, 0], [connectionProbability, 1-connectionProbability]) if (i != j) else 0) for j in range(oscillators_number)] for i in range(oscillators_number)],
-        "freeScaling": [],
-        "smallWorld": [],
+        "random": [[(random.choice([1, 0]), [connectionProbability, 1-connectionProbability]) if (i != j) else 0 for j in range(oscillators_number)] for i in range(oscillators_number)],
+        "freeScaling": [networkx.to_numpy_array(networkx.scale_free_graph(oscillators_number))],
+        "smallWorld": [networkx.to_numpy_array(networkx.watts_strogatz_graph(oscillators_number, neighbours, connectionProbability))],
     }
-    config['Aij'] = topologydict[topology]
+    config['Aij'] = [[(1 if i != j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)] #topologydict[topology]
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
     config['t0'] = 0
     config['tf'] = 100
