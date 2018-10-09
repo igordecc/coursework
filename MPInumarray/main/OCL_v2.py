@@ -5,7 +5,7 @@ Experiment function is made from adding_vectors_v3.py
 import pyopencl as cl
 import numpy as np
 from time import perf_counter
-from config_creator import create_config
+
 #A[self.pendulum_index][j] * sin( phase_vector[j] - my_phase )
 
 
@@ -111,17 +111,20 @@ def ad(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0,
     return phase_vector, time_queue
 
 
-if __name__ == '__main__':
-    oscillators_number=16 * 100
-    config = create_config(oscillators_number=oscillators_number, filename=None)
+#TODO: move to tests
 
-
-    phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
-    phase_vector[0] = config['phase_vector']
-
-    omega_vector = np.array(config['omega_vector'], dtype=np.float32)
-    Aij = np.array(config['Aij'], dtype=np.float32)
-
-    phase_vector, time_queue = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
-    #result, time_queue = ad()
-    #print(result, time_queue, sep='\n')
+#from config_creator import create_config
+# if __name__ == '__main__':
+#     oscillators_number=16 * 100
+#     config = create_config(oscillators_number=oscillators_number, filename=None)
+#
+#
+#     phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
+#     phase_vector[0] = config['phase_vector']
+#
+#     omega_vector = np.array(config['omega_vector'], dtype=np.float32)
+#     Aij = np.array(config['Aij'], dtype=np.float32)
+#
+#     phase_vector, time_queue = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
+#     #result, time_queue = ad()
+#     #print(result, time_queue, sep='\n')

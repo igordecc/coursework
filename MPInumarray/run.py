@@ -1,10 +1,10 @@
-from config_creator import create_config
+from config.config_creator import create_config
 import numpy as np
 import math
 import time
 
 try:
-    from avv3_exper_v2 import ad
+    from main.OCL_v2 import ad
 except:
     import sys
     rank=0
@@ -93,15 +93,15 @@ def run_K_model(flag, osc_min=1, osc_max=101, osc_step=10):
             if "time" in flag:
                 timer_result = timer.stop()
                 print("Calculate time", timer_result)
-                with open("test_txt//time.txt", "a") as myfile: #timer stuff
+                with open("result_txt//time.txt", "a") as myfile: #timer stuff
                     myfile.write(str(timer_result)+"\n") #str(oscillators_number)+" "+
             if "phase" in flag:
-                with open("test_txt//test"+str(oscillators_number)+".txt", "w") as myfile:  #plot: phase(time)
+                with open("result_txt//test"+str(oscillators_number)+".txt", "w") as myfile:  #plot: phase(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(pendulum_time_output_array[i])+" "+" ".join(str(x) for x in pendulum_phase_output_array[i])+"\n")
             if "r" in flag:    #write in file
                 r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)  # ------------calculating r(t)-------------
-                with open("test_txt//testr"+str(oscillators_number)+".txt", "w") as myfile: #plot: r(time)
+                with open("result_txt//testr"+str(oscillators_number)+".txt", "w") as myfile: #plot: r(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(pendulum_time_output_array[i]) + " " + str(r[i]) + "\n")
 
@@ -136,13 +136,13 @@ def run_RLambd_model(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_num
         if "time" in flag:
             timer_result = timer.stop()
             print("Calculate time", timer_result)
-            with open("test_txt//time_r(lambda).txt", "w") as myfile:  # timer stuff
+            with open("result_txt//time_r(lambda).txt", "w") as myfile:  # timer stuff
                 myfile.write(str(oscillators_number) + " " + str(timer_result) + "\n")
         if "r" in flag:  # write in file
-            with open("test_txt//test_r(lambda).txt", "w") as myfile:  # plot: r(time)
+            with open("result_txt//test_r(lambda).txt", "w") as myfile:  # plot: r(time)
                 for i in range(len(r_out)):
                     myfile.write(str(lambd_out[i]) + " " + str(r_out[i]) + "\n")
-            with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
+            with open("result_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
                 for i in range(time_output_array_length):
                     myfile.write(str(pendulum_time_output_array[i]) + " " + str(r_array[i]) + "\n")
 
@@ -168,15 +168,15 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
             timer_result = timer.stop()
             if "time" in flag:
                 print("Calculate time", timer_result)
-                with open("test_txt//time.txt", "a") as myfile:  # timer stuff
+                with open("result_txt//time.txt", "a") as myfile:  # timer stuff
                     myfile.write(str(oscillators_number)+" "+str(timer_result) + "\n")  # str(oscillators_number)+" "+
             if "phase" in flag:
-                with open("test_txt//test" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: phase(time)
+                with open("result_txt//test" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: phase(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(config['h']*i) + " " + " ".join(str(x) for x in pendulum_phase_output_array[i]) + "\n")
             if "r" in flag:  # write in file
                 r = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)  # ------------calculating r(t)-------------
-                with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
+                with open("result_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
                     for i in range(time_output_array_length):
                         myfile.write(str(config['h']*i) + " " + str(r[i]) + "\n")
 # заметка - генератор конфига паралелиться не будет - программа готова! дальше работа над дипломной! и дописание небходимых возможностей подсчёта
@@ -209,13 +209,13 @@ def run_OCL_RLambd(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_numbe
         if "time" in flag:
             timer_result = timer.stop()
             print("Calculate time", timer_result)
-            with open("test_txt//time_r(lambda).txt", "w") as myfile:  # timer stuff
+            with open("result_txt//time_r(lambda).txt", "w") as myfile:  # timer stuff
                 myfile.write(str(oscillators_number) + " " + str(timer_result) + "\n")
         if "r" in flag:  # write in file
-            with open("test_txt//test_r(lambda).txt", "w") as myfile:  # plot: r(time)
+            with open("result_txt//test_r(lambda).txt", "w") as myfile:  # plot: r(time)
                 for i in range(len(r_out)):
                     myfile.write(str(lambd_out[i]) + " " + str(r_out[i]) + "\n")
-            with open("test_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
+            with open("result_txt//testr" + str(oscillators_number) + ".txt", "w") as myfile:  # plot: r(time)
                 for i in range(time_output_array_length):
                     myfile.write(str(config['h']*i) + " " + str(r_array[i]) + "\n")
     ...
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     "phase" -> phase(time) measuring
     "r" -> r(time) measuring
     """
-    with open("test_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
+    with open("result_txt//time.txt", "w") as myfile: #reset previous notes in time.txt
         ...
     #run_OCL(flag, osc_min=10, osc_max=20, osc_step=10)
     #run_OCL(flag, osc_min=5000, osc_max=10000, osc_step=100)
@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
 
     #Note: change N in config creator: from 200 to 2000
-    #Note: Look for time.txt in ./test_txt
+    #Note: Look for time.txt in ./result_txt
 
     # ====performance OCL tests==============
     run_OCL(flag, osc_min=1000, osc_max=1001, osc_step=20)

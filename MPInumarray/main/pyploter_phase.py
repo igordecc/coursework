@@ -7,7 +7,7 @@ if __name__ == '__main__':
     #filename ='test10.txt'      # input('filename:')
     #filename = 'test11.txt'
     #filename = 'test_r(lambda).txt'
-    with open('test_txt//'+filename, "r") as myfile:
+    with open('result_txt//'+filename, "r") as myfile:
         data_index_array = []
         data_array = []
 

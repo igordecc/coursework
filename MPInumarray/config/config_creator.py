@@ -22,7 +22,7 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
     neighbours = 4
     topologydict = {
         "fullyConnected": [[(1 if i != j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)],
-        "random": [[(random.choice([1, 0]), [connectionProbability, 1-connectionProbability]) if (i != j) else 0 for j in range(oscillators_number)] for i in range(oscillators_number)],
+        "random": [[1 if (random.random() < connectionProbability) and (i != j) else 0 for j in range(oscillators_number)] for i in range(oscillators_number)],
         "freeScaling": [networkx.to_numpy_array(networkx.scale_free_graph(oscillators_number))],
         "smallWorld": [networkx.to_numpy_array(networkx.watts_strogatz_graph(oscillators_number, neighbours, connectionProbability))],
     }
