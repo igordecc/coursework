@@ -92,7 +92,7 @@ def runge(a, b, initial_conditions, N, vfunc, oscillators_number):
         t += h
     return t, y
 
-#TODO write simple example of this programm:.
+#TODO write test of this programm:.
 #1 цикл: расчёт (какие нибудь простые проверяемые данные; принт где угодно), газер, бродкаст; также, юзая функцию compute_partition
 
 if __name__ == '__main__':

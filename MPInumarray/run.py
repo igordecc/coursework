@@ -180,8 +180,7 @@ def run_OCL(flag, osc_min=1, osc_max=101, osc_step=10):
                     for i in range(time_output_array_length):
                         myfile.write(str(config['h']*i) + " " + str(r[i]) + "\n")
 # заметка - генератор конфига паралелиться не будет - программа готова! дальше работа над дипломной! и дописание небходимых возможностей подсчёта
-#TODO подсчитать время генерации конфига и построить график
-#TODO создать графики и перенести их в дипломную
+
 
 def run_OCL_RLambd(flag, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number = 10):
     r_out = []
@@ -252,7 +251,9 @@ if __name__ == '__main__':
 
     #import PyQt5
     #from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
-    #TODO from PyQt5 use QGridLayout FROM https://pythonspot.com/pyqt5-grid-layout/
+    #TODO import run.py  functions in UI.py. Run them, if button clicked.
 
+    import UI
+    UI.initUI()
 
 #unknown Loopies
