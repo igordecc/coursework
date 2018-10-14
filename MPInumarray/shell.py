@@ -251,9 +251,8 @@ if __name__ == '__main__':
 
     #import PyQt5
     #from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
-    #TODO import run.py  functions in UI.py. Run them, if button clicked.
+    #TODO import shell.py  functions in UI.py. Run them, if button clicked.
 
     import UI
     UI.initUI()
 
-#unknown Loopies
