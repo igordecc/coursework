@@ -81,9 +81,14 @@ class App(QDialog):
 
     @pyqtSlot()
     def on_click(self):
+
         textboxValue = self.textboxList[0].text()
         QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
         self.textboxList[0].setText("")
+
+        import shell
+        shell.computeSystemOCL(osc_min=1000, osc_max=1001, osc_step=20)
+
 
 class PlotCanvas(FigureCanvas):
 
@@ -116,6 +121,8 @@ def initUI():
 if __name__ == '__main__':
     initUI()
 
+    import shell
+    shell.computeSdystemOCL(osc_min=1000, osc_max=1001, osc_step=20)
 
 
     # TODO import shell.py  functions in UI.py. Run them, if button clicked.
