@@ -30,7 +30,7 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
     config['t0'] = 0
     config['tf'] = 100
-    config['N'] = 200
+    config['N'] = 200  #iteration count
     config['h'] = (config['tf']-config['t0'])/config['N']
 
     if filename is not None:

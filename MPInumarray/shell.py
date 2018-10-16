@@ -63,10 +63,7 @@ def computeSystemOCL(osc_min=1, osc_max=101, osc_step=10):
 
         return pendulum_phase_output_array, pendulum_time_output_array, time_output_array_length
 
-def plotComputed(pendulum_phase_output_array, pendulum_time_output_array):
-    pp.plot(pendulum_phase_output_array, pendulum_time_output_array)
-
-def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10):
+def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.01, oscillators_number=10):
     r_out = []
     lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
 
@@ -82,19 +79,12 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=
         pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
         time_output_array_length = config['N']
         r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
-        n = 1000
+        n = int(time_output_array_length/2)
         r_out.append( sum(r_array[-n:])/n)
-
+    return r_out
 
 if __name__ == '__main__':
-    pendulum_phase_output_array, pendulum_time_output_array, time_output_array_length = computeSystemOCL(osc_min=1000, osc_max=1001, osc_step=20)
-
-    print(pendulum_time_output_array)
-    print(pendulum_phase_output_array)
-    print(time_output_array_length)
-    pp.plot(pendulum_time_output_array, np.linspace(0, len(pendulum_time_output_array)))
-
-
+    ...
 #TODO plot pendulum_phase_output_array somehow
 
 #TODO import shell.py  functions in UI.py. Run them, if button clicked.

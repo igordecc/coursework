@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 
 import random
 
+import shell
+import numpy as np
 
 class App(QDialog):
 
@@ -49,6 +51,16 @@ class App(QDialog):
         globalLayout.addWidget(PlotCanvas(self, width=5, height=4), 0, 1)
 
         localLayout = self.createLocalLayout(("lambda", "K", "x"), "evaluate")
+        self.firstGroupBox.setLayout(localLayout)
+
+        # --- end
+        # --- second plot
+        self.firstGroupBox = QGroupBox("Wait a second")
+        globalLayout.addWidget(self.firstGroupBox, 1, 0)
+
+        globalLayout.addWidget(PlotCanvasRL(self, width=5, height=4), 1, 1)
+
+        localLayout = self.createLocalLayout(("Lambda min", "Lambda max", "dLambda"), "evaluate")
         self.firstGroupBox.setLayout(localLayout)
 
         # --- end
@@ -106,12 +118,45 @@ class PlotCanvas(FigureCanvas):
         self.plot()
 
     def plot(self):
-        data = [random.random() for i in range(25)]
         ax = self.figure.add_subplot(111)
-        ax.plot(data, 'r-')
+
+        pendulum_phase_output_array, pendulum_time_output_array, time_output_array_length = shell.computeSystemOCL(osc_min=10, osc_max=100, osc_step=1)
+        pendulum_phase_output_array = np.transpose(np.array(pendulum_phase_output_array))
+        print(pendulum_time_output_array)
+        print(pendulum_phase_output_array[0])
+        print(time_output_array_length)
+        for pendulum in pendulum_phase_output_array:
+            ax.plot(np.linspace(0, time_output_array_length, time_output_array_length), pendulum)
+
         ax.set_title('PyQt Matplotlib Example')
+
         self.draw()
 
+class PlotCanvasRL(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self,
+                                   QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+        self.plot()
+
+    def plot(self):
+        ax = self.figure.add_subplot(111)
+
+        RLArray = shell.computeRLSystemOCL()
+        tf = len(RLArray)
+        ax.plot(np.linspace(0, tf, tf), RLArray)
+
+        ax.set_title('PyQt Matplotlib Example')
+
+        self.draw()
 
 def initUI():
     app = QApplication(sys.argv)
@@ -120,9 +165,10 @@ def initUI():
 
 if __name__ == '__main__':
     initUI()
+    ...
 
-    import shell
-    shell.computeSdystemOCL(osc_min=1000, osc_max=1001, osc_step=20)
+
+
 
 
     # TODO import shell.py  functions in UI.py. Run them, if button clicked.
