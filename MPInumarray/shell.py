@@ -47,7 +47,7 @@ def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_num
     return r
 
 
-def computeSystemOCL(osc_min=1, osc_max=101, osc_step=10):
+def computeSystemOCL(osc_min=5, osc_max=6, osc_step=10):
 
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
         config = create_config(oscillators_number=oscillators_number, filename=None)
@@ -60,10 +60,11 @@ def computeSystemOCL(osc_min=1, osc_max=101, osc_step=10):
         timer = Timer().start()
         pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
         time_output_array_length = config['N']
+        pendulum_phase_output_array = np.transpose(np.array(pendulum_phase_output_array))
+        #print(pendulum_phase_output_array)
+        return pendulum_phase_output_array
 
-        return pendulum_phase_output_array, pendulum_time_output_array, time_output_array_length
-
-def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.01, oscillators_number=10):
+def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10):
     r_out = []
     lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
 
@@ -81,6 +82,7 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.01, oscillators_number
         r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
         n = int(time_output_array_length/2)
         r_out.append( sum(r_array[-n:])/n)
+    r_out = np.array(r_out)
     return r_out
 
 if __name__ == '__main__':

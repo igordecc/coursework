@@ -40,35 +40,37 @@ class App(QDialog):
 
     def createGridLayout(self):
         self.horizontalGroupBox = QGroupBox("Grid")
-        globalLayout = QGridLayout()
+        self.globalLayout = QGridLayout()
         # !!!! DO NOT CHANGE setColumStretch without purpose
-        globalLayout.setColumnStretch(1, 4)
+        self.globalLayout.setColumnStretch(1, 4)
+        self.figure = []
 
-        # --- first plot
         self.firstGroupBox = QGroupBox("A-HA! First")
-        globalLayout.addWidget(self.firstGroupBox, 0, 0)
+        self.globalLayout.addWidget(self.firstGroupBox, 0, 0)
+        self.figure.append(PlotCanvas(self, model=shell.computeSystemOCL, width=5, height=4))
+        self.globalLayout.addWidget(self.figure[0], 0, 1)
 
-        globalLayout.addWidget(PlotCanvas(self, width=5, height=4), 0, 1)
-
-        localLayout = self.createLocalLayout(("lambda", "K", "x"), "evaluate")
+        localLayout = self.createLocalLayout(("lambda", "K", "x"), "evaluate", num=0)
         self.firstGroupBox.setLayout(localLayout)
 
-        # --- end
-        # --- second plot
+
+
         self.firstGroupBox = QGroupBox("Wait a second")
-        globalLayout.addWidget(self.firstGroupBox, 1, 0)
+        self.globalLayout.addWidget(self.firstGroupBox, 1, 0)
 
-        globalLayout.addWidget(PlotCanvasRL(self, width=5, height=4), 1, 1)
+        self.figure.append(PlotCanvas(self, model=shell.computeRLSystemOCL, width=5, height=4))
+        #self.globalLayout.addWidget(figure, 1, 1)
+        self.globalLayout.addWidget(self.figure[1] , 1, 1)
 
-        localLayout = self.createLocalLayout(("Lambda min", "Lambda max", "dLambda"), "evaluate")
+        localLayout = self.createLocalLayout(("Lambda min", "Lambda max", "dLambda"), "evaluate", num=1)
         self.firstGroupBox.setLayout(localLayout)
 
-        # --- end
-        self.horizontalGroupBox.setLayout(globalLayout)
+        self.horizontalGroupBox.setLayout(self.globalLayout)
 
-    def createLocalLayout(self, args, evaluate):
+    def createLocalLayout(self, args, evaluate, num):
         """
         For fast creating Local Layout
+        :param num:
         :param args: TEXT TUPLE
         :return: localLayout
         """
@@ -87,25 +89,24 @@ class App(QDialog):
         localLayout.addWidget(self.evButton, i, 1)
 
         # connect button to function on_click. To make it clickable.
-        self.evButton.clicked.connect(self.on_click)
+        self.evButton.clicked.connect(lambda: self.on_click(num))
 
         return localLayout
 
     @pyqtSlot()
-    def on_click(self):
-
+    def on_click(self, num):
+        figure = self.figure[num].plot()
+        self.globalLayout.addWidget(figure, 0, 1)
         textboxValue = self.textboxList[0].text()
-        QMessageBox.question(self, 'Message - pythonspot.com', "You typed: " + textboxValue, QMessageBox.Ok, QMessageBox.Ok)
         self.textboxList[0].setText("")
 
-        import shell
-        shell.computeSystemOCL(osc_min=1000, osc_max=1001, osc_step=20)
 
 
 class PlotCanvas(FigureCanvas):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, model=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
+        self.model = model
         self.axes = fig.add_subplot(111)
 
         FigureCanvas.__init__(self, fig)
@@ -117,46 +118,27 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
         self.plot()
 
-    def plot(self):
+    def plot(self, **kwargs):
         ax = self.figure.add_subplot(111)
+        ax.cla()
+        output_array = self.model(**kwargs)
 
-        pendulum_phase_output_array, pendulum_time_output_array, time_output_array_length = shell.computeSystemOCL(osc_min=10, osc_max=100, osc_step=1)
-        pendulum_phase_output_array = np.transpose(np.array(pendulum_phase_output_array))
-        print(pendulum_time_output_array)
-        print(pendulum_phase_output_array[0])
-        print(time_output_array_length)
-        for pendulum in pendulum_phase_output_array:
-            ax.plot(np.linspace(0, time_output_array_length, time_output_array_length), pendulum)
+
+        print("len(output_array) "+str(len(output_array)))
+        print("shape " + str(output_array.shape))
+        print("shape len " + str(len(output_array.shape)))
+
+        if len(output_array.shape) == 1:
+            ln = len(output_array)
+            ax.plot(np.linspace(0, ln, ln), output_array)
+        else:
+            ln = len(output_array[0])
+            for pendulum in output_array:
+                ax.plot(np.linspace(0, ln, ln), pendulum)
 
         ax.set_title('PyQt Matplotlib Example')
-
         self.draw()
 
-class PlotCanvasRL(FigureCanvas):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
-
-        FigureCanvas.setSizePolicy(self,
-                                   QSizePolicy.Expanding,
-                                   QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
-        self.plot()
-
-    def plot(self):
-        ax = self.figure.add_subplot(111)
-
-        RLArray = shell.computeRLSystemOCL()
-        tf = len(RLArray)
-        ax.plot(np.linspace(0, tf, tf), RLArray)
-
-        ax.set_title('PyQt Matplotlib Example')
-
-        self.draw()
 
 def initUI():
     app = QApplication(sys.argv)
