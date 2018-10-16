@@ -1,17 +1,19 @@
 import sys
+import numpy as np
+import random
 
+#PyQt5 UI stuff. Widjets, midjets etc.
 from PyQt5.QtWidgets import QAction, QLineEdit, QMessageBox, QApplication, QWidget, QPushButton, QSizePolicy, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout, QLabel
 from PyQt5.QtGui import QIcon, QIntValidator, QDoubleValidator
 from PyQt5.QtCore import pyqtSlot
 
+#matplot libraries need to do plotting stuff
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-import random
-
+#project modules used in this one
 import shell
-import numpy as np
 
 class App(QDialog):
 
@@ -39,13 +41,16 @@ class App(QDialog):
         self.show()
 
     def createGridLayout(self):
+        # Grid layout is pretty useful.
+        # It allows to scale every window item with the window itself.
         self.horizontalGroupBox = QGroupBox("Grid")
         self.globalLayout = QGridLayout()
-        # !!!! DO NOT CHANGE setColumStretch without purpose
+        # !!!! DO NOT CHANGE setColumStretch without purpose. Or size proportions of plots and textboxes will broke!
         self.globalLayout.setColumnStretch(1, 4)
         self.figure = []
 
-        self.firstGroupBox = QGroupBox("A-HA! First")
+
+        self.firstGroupBox = QGroupBox("First")
         self.globalLayout.addWidget(self.firstGroupBox, 0, 0)
         self.figure.append(PlotCanvas(self, model=shell.computeSystemOCL, width=5, height=4))
         self.globalLayout.addWidget(self.figure[0], 0, 1)
@@ -54,23 +59,21 @@ class App(QDialog):
         self.firstGroupBox.setLayout(localLayout)
 
 
-
-        self.firstGroupBox = QGroupBox("Wait a second")
+        self.firstGroupBox = QGroupBox("Second")
         self.globalLayout.addWidget(self.firstGroupBox, 1, 0)
-
         self.figure.append(PlotCanvas(self, model=shell.computeRLSystemOCL, width=5, height=4))
-        #self.globalLayout.addWidget(figure, 1, 1)
         self.globalLayout.addWidget(self.figure[1] , 1, 1)
 
         localLayout = self.createLocalLayout(("Lambda min", "Lambda max", "dLambda"), "evaluate", num=1)
         self.firstGroupBox.setLayout(localLayout)
+
 
         self.horizontalGroupBox.setLayout(self.globalLayout)
 
     def createLocalLayout(self, args, evaluate, num):
         """
         For fast creating Local Layout
-        :param num:
+        :param num: localLayout number
         :param args: TEXT TUPLE
         :return: localLayout
         """
@@ -79,7 +82,7 @@ class App(QDialog):
 
         i = 0
         self.textboxList = []
-        for string in args:
+        for string in args:     # so many labels, so many textgoxes
             self.textboxList.append(QLineEdit(self))
             self.textboxList[i].setValidator(QDoubleValidator())
             localLayout.addWidget(self.textboxList[i], i, 0)
@@ -103,7 +106,7 @@ class App(QDialog):
 
 
 class PlotCanvas(FigureCanvas):
-
+    #we need to create plot object. To Do that, we use FigureCanvas-like class.
     def __init__(self, parent=None, model=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.model = model
@@ -119,15 +122,12 @@ class PlotCanvas(FigureCanvas):
         self.plot()
 
     def plot(self, **kwargs):
+        # is plot function, that plot a plot, then you call the plot()
         ax = self.figure.add_subplot(111)
         ax.cla()
         output_array = self.model(**kwargs)
 
-
-        print("len(output_array) "+str(len(output_array)))
-        print("shape " + str(output_array.shape))
-        print("shape len " + str(len(output_array.shape)))
-
+        #we need to plot lambda and usual graphics by the same plot() method
         if len(output_array.shape) == 1:
             ln = len(output_array)
             ax.plot(np.linspace(0, ln, ln), output_array)
@@ -141,6 +141,7 @@ class PlotCanvas(FigureCanvas):
 
 
 def initUI():
+    # one additional layer to compact __main__
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())
@@ -151,6 +152,6 @@ if __name__ == '__main__':
 
 
 
+    #TODO make textboxes usefull
 
-
-    # TODO import shell.py  functions in UI.py. Run them, if button clicked.
+    # TODO make new coments after all

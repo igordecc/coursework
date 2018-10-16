@@ -87,8 +87,5 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=
 
 if __name__ == '__main__':
     ...
-#TODO plot pendulum_phase_output_array somehow
-
-#TODO import shell.py  functions in UI.py. Run them, if button clicked.
 
 #TODO make new coments after all
