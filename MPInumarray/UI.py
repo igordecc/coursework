@@ -81,7 +81,7 @@ class createLocalLayout():
         self.textboxList = {}
         for string in args:     # so many labels, so many textboxes
             self.textboxList[string] = QLineEdit()
-            #self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
+            self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
             self.localLayout.addWidget(self.textboxList[string], i, 0)
             self.localLayout.addWidget(QLabel(string), i, 1)
             i += 1
@@ -99,6 +99,7 @@ class createLocalLayout():
         textboxValue = {}
         for key in self.textboxList.keys() :
             text = self.textboxList[key].text()
+            text = text.replace(",", ".")
             textboxValue[key] = np.int(text) if np.mod(np.float(text), 1) == 0 else np.float(text)
 
         figure = self.figure[num].plot(**textboxValue)
