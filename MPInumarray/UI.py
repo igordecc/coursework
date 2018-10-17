@@ -55,8 +55,8 @@ class App(QDialog):
         self.figure.append(PlotCanvas(self, model=shell.computeSystemOCL, width=5, height=4))
         self.globalLayout.addWidget(self.figure[0], 0, 1)
 
-        localLayout = self.createLocalLayout(("lambda", "K", "x"), "evaluate", num=0)
-        self.firstGroupBox.setLayout(localLayout)
+        localLayout = createLocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=0, figure=self.figure, globalLayout=self.globalLayout)
+        self.firstGroupBox.setLayout(localLayout.localLayout)
 
 
         self.firstGroupBox = QGroupBox("Second")
@@ -64,44 +64,45 @@ class App(QDialog):
         self.figure.append(PlotCanvas(self, model=shell.computeRLSystemOCL, width=5, height=4))
         self.globalLayout.addWidget(self.figure[1] , 1, 1)
 
-        localLayout = self.createLocalLayout(("Lambda min", "Lambda max", "dLambda"), "evaluate", num=1)
-        self.firstGroupBox.setLayout(localLayout)
+        localLayout = createLocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=1, figure=self.figure, globalLayout=self.globalLayout)
+        self.firstGroupBox.setLayout(localLayout.localLayout)
 
 
         self.horizontalGroupBox.setLayout(self.globalLayout)
 
-    def createLocalLayout(self, args, evaluate, num):
-        """
-        For fast creating Local Layout
-        :param num: localLayout number
-        :param args: TEXT TUPLE
-        :return: localLayout
-        """
+class createLocalLayout():
+    def __init__(self, args, evaluate, num, figure, globalLayout):
 
-        localLayout = QGridLayout()
+        self.localLayout = QGridLayout()
+        self.figure = figure
+        self.globalLayout = globalLayout
 
         i = 0
-        self.textboxList = []
-        for string in args:     # so many labels, so many textgoxes
-            self.textboxList.append(QLineEdit(self))
-            self.textboxList[i].setValidator(QDoubleValidator())
-            localLayout.addWidget(self.textboxList[i], i, 0)
-            localLayout.addWidget(QLabel(string), i, 1)
+        self.textboxList = {}
+        for string in args:     # so many labels, so many textboxes
+            self.textboxList[string] = QLineEdit()
+            #self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
+            self.localLayout.addWidget(self.textboxList[string], i, 0)
+            self.localLayout.addWidget(QLabel(string), i, 1)
             i += 1
+
         self.evButton = QPushButton(evaluate)
-        localLayout.addWidget(self.evButton, i, 1)
+        self.localLayout.addWidget(self.evButton, i, 1)
 
         # connect button to function on_click. To make it clickable.
         self.evButton.clicked.connect(lambda: self.on_click(num))
 
-        return localLayout
+
 
     @pyqtSlot()
     def on_click(self, num):
-        figure = self.figure[num].plot()
+        textboxValue = {}
+        for key in self.textboxList.keys() :
+            text = self.textboxList[key].text()
+            textboxValue[key] = np.int(text) if np.mod(np.float(text), 1) == 0 else np.float(text)
+
+        figure = self.figure[num].plot(**textboxValue)
         self.globalLayout.addWidget(figure, 0, 1)
-        textboxValue = self.textboxList[0].text()
-        self.textboxList[0].setText("")
 
 
 
