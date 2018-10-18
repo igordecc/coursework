@@ -4,7 +4,7 @@ import math
 import time
 import matplotlib.pyplot as pp
 try:
-    from main.OCL_v2 import ad
+    from main.OCL import ad
 except:
     import sys
     print("shell running without opencl", file=sys.stderr)
@@ -23,8 +23,8 @@ class Timer:
         return self.t
 
 
-def load_kuramotosystem_from_config(config):
-    return cls.KuramotoSystem(config['omega_vector'], config['lambd'], config['Aij'], config['phase_vector'], config['t0'], config['tf'], config['N'], config['oscillators_number'])
+# def load_kuramotosystem_from_config(config):
+#     return cls.KuramotoSystem(config['omega_vector'], config['lambd'], config['Aij'], config['phase_vector'], config['t0'], config['tf'], config['N'], config['oscillators_number'])
 
 
 def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number):
@@ -83,9 +83,30 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=
         n = int(time_output_array_length/2)
         r_out.append( sum(r_array[-n:])/n)
     r_out = np.array(r_out)
-    return r_out
+    ln = len(r_out)
+    lin_out = np.linspace(0, ln, ln)
+    return (lin_out, r_out)
+
+def KAnalis(lambd=0.1, oscillators_number=100, topology="smallWorld"):
+    config = create_config(lambd=lambd, oscillators_number=oscillators_number, topology=topology)
+    Aij = np.array(config["Aij"])
+
+    listNum = []
+    for i in range(Aij.shape[0]):
+        conNumNode = 0
+        for j in range(Aij.shape[1]):
+            conNumNode += Aij[i][j]
+        listNum.append(conNumNode)
+    listNum = np.array(listNum)
+
+    import pandas as pd
+    import matplotlib.pyplot as pp
+    nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
+    return tuple(nodRankSeries.values.T)
+
 
 if __name__ == '__main__':
     ...
+    KAnalis(.1, 100,"smallWorld")
 
 #TODO make new coments after all

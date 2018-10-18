@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import random
+import pandas as pd
 
 #PyQt5 UI stuff. Widjets, midjets etc.
 from PyQt5.QtWidgets import QAction, QLineEdit, QMessageBox, QApplication, QWidget, QPushButton, QSizePolicy, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout, QLabel
@@ -20,10 +21,10 @@ class App(QDialog):
     def __init__(self):
         super().__init__()
         self.title = 'PyQt5 layout - pythonspot.com'
-        self.left = 10
-        self.top = 10
-        self.width = 320
-        self.height = 100
+        self.left = 400
+        self.top = 200
+        self.width = 800
+        self.height = 600
         self.initUI()
 
     def initUI(self):
@@ -48,25 +49,33 @@ class App(QDialog):
         # !!!! DO NOT CHANGE setColumStretch without purpose. Or size proportions of plots and textboxes will broke!
         self.globalLayout.setColumnStretch(1, 4)
         self.figure = []
-
+        self.gRowIndex = 0
 
         self.firstGroupBox = QGroupBox("First")
-        self.globalLayout.addWidget(self.firstGroupBox, 0, 0)
+        self.globalLayout.addWidget(self.firstGroupBox, self.gRowIndex, 0)
         self.figure.append(PlotCanvas(self, model=shell.computeSystemOCL, width=5, height=4))
-        self.globalLayout.addWidget(self.figure[0], 0, 1)
+        self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
 
-        localLayout = createLocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=0, figure=self.figure, globalLayout=self.globalLayout)
+        localLayout = createLocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout)
         self.firstGroupBox.setLayout(localLayout.localLayout)
 
-
+        self.gRowIndex += 1
         self.firstGroupBox = QGroupBox("Second")
-        self.globalLayout.addWidget(self.firstGroupBox, 1, 0)
+        self.globalLayout.addWidget(self.firstGroupBox, self.gRowIndex, 0)
         self.figure.append(PlotCanvas(self, model=shell.computeRLSystemOCL, width=5, height=4))
-        self.globalLayout.addWidget(self.figure[1] , 1, 1)
+        self.globalLayout.addWidget(self.figure[self.gRowIndex] , self.gRowIndex, 1)
 
-        localLayout = createLocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=1, figure=self.figure, globalLayout=self.globalLayout)
+        localLayout = createLocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout)
         self.firstGroupBox.setLayout(localLayout.localLayout)
 
+        self.gRowIndex += 1
+        self.firstGroupBox = QGroupBox("Third")
+        self.globalLayout.addWidget(self.firstGroupBox, self.gRowIndex, 0)
+        self.figure.append(PlotCanvas(self, model=shell.KAnalis, width=5, height=4))
+        self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
+
+        localLayout = createLocalLayout(("lambd", "oscillators_number", "topology"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout)
+        self.firstGroupBox.setLayout(localLayout.localLayout)
 
         self.horizontalGroupBox.setLayout(self.globalLayout)
 
@@ -81,7 +90,7 @@ class createLocalLayout():
         self.textboxList = {}
         for string in args:     # so many labels, so many textboxes
             self.textboxList[string] = QLineEdit()
-            self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
+            #self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
             self.localLayout.addWidget(self.textboxList[string], i, 0)
             self.localLayout.addWidget(QLabel(string), i, 1)
             i += 1
@@ -100,7 +109,14 @@ class createLocalLayout():
         for key in self.textboxList.keys() :
             text = self.textboxList[key].text()
             text = text.replace(",", ".")
-            textboxValue[key] = np.int(text) if np.mod(np.float(text), 1) == 0 else np.float(text)
+            try:
+                if np.mod(np.float(text), 1) == 0:
+                    textboxValue[key] = np.int(text)
+                else:
+                    textboxValue[key] = np.float(text)
+            except:
+                textboxValue[key] = text
+
 
         figure = self.figure[num].plot(**textboxValue)
         self.globalLayout.addWidget(figure, 0, 1)
@@ -130,9 +146,8 @@ class PlotCanvas(FigureCanvas):
         output_array = self.model(**kwargs)
 
         #we need to plot lambda and usual graphics by the same plot() method
-        if len(output_array.shape) == 1:
-            ln = len(output_array)
-            ax.plot(np.linspace(0, ln, ln), output_array)
+        if type(output_array) is tuple:
+            ax.plot(*output_array)
         else:
             ln = len(output_array[0])
             for pendulum in output_array:
