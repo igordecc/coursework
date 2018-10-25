@@ -21,12 +21,13 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
     connectionProbability = 0.6     # probability of random connections
     neighbours = 4
     topologydict = {
-        "fullyConnected".lower(): lambda: [[(1 if i != j else 0) for j in range(oscillators_number)] for i in range(oscillators_number)],
-        "random".lower(): lambda: [[1 if (random.random() < connectionProbability) and (i != j) else 0 for j in range(oscillators_number)] for i in range(oscillators_number)],
-        "freeScaling".lower(): lambda: networkx.to_numpy_array(networkx.scale_free_graph(oscillators_number)),
-        "smallWorld".lower(): lambda: networkx.to_numpy_array(networkx.watts_strogatz_graph(oscillators_number, neighbours, connectionProbability)),
+        "fullyConnected".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, p=1),
+        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, connectionProbability),
+        "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
+        "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, connectionProbability),
     }
-    config['Aij'] = topologydict[topology.lower()]()
+    config['topology'] = topologydict[topology.lower()]()
+    config['Aij'] = networkx.to_numpy_array(config['topology'])
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
     config['t0'] = 0
     config['tf'] = 100

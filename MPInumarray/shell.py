@@ -87,7 +87,7 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=
     lin_out = np.linspace(0, ln, ln)
     return (lin_out, r_out)
 
-def KAnalis(lambd=0.1, oscillators_number=100, topology="smallWorld"):
+def KAnalis(lambd=0.1, oscillators_number=1000, topology="smallWorld"):
     config = create_config(lambd=lambd, oscillators_number=oscillators_number, topology=topology)
     Aij = np.array(config["Aij"])
 
