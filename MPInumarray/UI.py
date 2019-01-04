@@ -20,7 +20,7 @@ class App(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.title = 'PyQt5 layout - pythonspot.com'
+        self.title = 'PyQt5 layout'
         self.left = 400
         self.top = 200
         self.width = 800

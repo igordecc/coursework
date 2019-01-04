@@ -23,7 +23,7 @@ G = nx.lollipop_graph(4, 6)
 
 pathlengths = []
 
-print("source vertex {target:length, }")
+print("nx.single_source_shortest_path_length ->> source vertex {target:length, }")
 for v in G.nodes():
     spl = dict(nx.single_source_shortest_path_length(G, v))
     print('{} {} '.format(v, spl))
@@ -33,7 +33,7 @@ for v in G.nodes():
 print('')
 print("average shortest path length %s" % (sum(pathlengths) / len(pathlengths)))
 
-# histogram of path lengths
+print("histogram of path lengths")
 dist = {}
 for p in pathlengths:
     if p in dist:
