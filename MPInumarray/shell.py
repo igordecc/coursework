@@ -3,6 +3,8 @@ import numpy as np
 import math
 import time
 import matplotlib.pyplot as pp
+import pandas as pd
+from networkx import nx
 try:
     from main.OCL import ad
 except:
@@ -91,6 +93,16 @@ def KAnalis(lambd=0.1, oscillators_number=1000, topology="smallWorld"):
     config = create_config(lambd=lambd, oscillators_number=oscillators_number, topology=topology)
     Aij = np.array(config["Aij"])
 
+    # cut in, because cant insert itself into ap, there are only plots possible
+    G = config["topology"]  # G means graph
+
+    centrality = nx.degree_centrality(G).values()
+    print("graph degree_centrality, max: ", max(centrality), " ; min: ",min(centrality))
+    print("graph degree_histogram: ",G.degree())
+    print("graph diameter: ",nx.diameter(G))
+    print("graph clustering coefficient: ", nx.average_clustering(G))
+
+
     listNum = []
     for i in range(Aij.shape[0]):
         conNumNode = 0
@@ -99,10 +111,11 @@ def KAnalis(lambd=0.1, oscillators_number=1000, topology="smallWorld"):
         listNum.append(conNumNode)
     listNum = np.array(listNum)
 
-    import pandas as pd
-    import matplotlib.pyplot as pp
     nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
     return tuple(nodRankSeries.values.T)
+
+
+# TODO make default value for text lines
 
 
 if __name__ == '__main__':

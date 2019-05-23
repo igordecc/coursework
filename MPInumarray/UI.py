@@ -53,34 +53,38 @@ class App(QDialog):
 
         self.firstGroupBox = QGroupBox("First")
         self.globalLayout.addWidget(self.firstGroupBox, self.gRowIndex, 0)
-        self.figure.append(PlotCanvas(self, model=shell.computeSystemOCL, width=5, height=4))
+        model = shell.computeSystemOCL
+        self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
         self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
 
-        localLayout = createLocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout)
+        localLayout = createLocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
         self.firstGroupBox.setLayout(localLayout.localLayout)
 
         self.gRowIndex += 1
         self.firstGroupBox = QGroupBox("Second")
         self.globalLayout.addWidget(self.firstGroupBox, self.gRowIndex, 0)
-        self.figure.append(PlotCanvas(self, model=shell.computeRLSystemOCL, width=5, height=4))
+        model = shell.computeRLSystemOCL
+        self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
         self.globalLayout.addWidget(self.figure[self.gRowIndex] , self.gRowIndex, 1)
 
-        localLayout = createLocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout)
+        localLayout = createLocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
         self.firstGroupBox.setLayout(localLayout.localLayout)
 
         self.gRowIndex += 1
         self.firstGroupBox = QGroupBox("Third")
         self.globalLayout.addWidget(self.firstGroupBox, self.gRowIndex, 0)
-        self.figure.append(PlotCanvas(self, model=shell.KAnalis, width=5, height=4))
+        model = shell.KAnalis
+        self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
         self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
 
-        localLayout = createLocalLayout(("lambd", "oscillators_number", "topology"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout)
+        localLayout = createLocalLayout(("lambd", "oscillators_number", "topology"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
+        # localLayout.textboxList.__setitem__()
         self.firstGroupBox.setLayout(localLayout.localLayout)
 
         self.horizontalGroupBox.setLayout(self.globalLayout)
 
 class createLocalLayout():
-    def __init__(self, args, evaluate, num, figure, globalLayout):
+    def __init__(self, args, evaluate, num, figure, globalLayout, default_values=None):
 
         self.localLayout = QGridLayout()
         self.figure = figure
@@ -90,6 +94,9 @@ class createLocalLayout():
         self.textboxList = {}
         for string in args:     # so many labels, so many textboxes
             self.textboxList[string] = QLineEdit()
+            if default_values:
+                self.textboxList[string].insert(str(default_values[i]))
+            # self.textboxList[string].text()
             #self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
             self.localLayout.addWidget(self.textboxList[string], i, 0)
             self.localLayout.addWidget(QLabel(string), i, 1)
