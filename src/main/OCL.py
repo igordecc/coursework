@@ -30,7 +30,7 @@ kernel void  kuramoto_equation(
     
 }"""
 
-def ad(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0, b=200, oscillators_number=16 * 10000000, N_parts=2000):
+def compute_time_series_for_system(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0, b=200, oscillators_number=16 * 10000000, N_parts=2000):
     h = abs(a - b) / N_parts
 
     platformsNum = 0    #определяем объект устройства (девайса)

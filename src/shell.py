@@ -2,11 +2,10 @@ from config.config_creator import create_config
 import numpy as np
 import math
 import time
-import matplotlib.pyplot as pp
 import pandas as pd
 from networkx import nx
 try:
-    from main.OCL import ad
+    from main.OCL import compute_time_series_for_system
 except:
     import sys
     print("shell running without opencl", file=sys.stderr)
@@ -23,10 +22,6 @@ class Timer:
     def stop(self):
         self.t = time.perf_counter()-self.t
         return self.t
-
-
-# def load_kuramotosystem_from_config(config):
-#     return cls.KuramotoSystem(config['omega_vector'], config['lambd'], config['Aij'], config['phase_vector'], config['t0'], config['tf'], config['N'], config['oscillators_number'])
 
 
 def get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number):
@@ -60,7 +55,7 @@ def computeSystemOCL(osc_min=5, osc_max=6, osc_step=10):
         omega_vector = np.array(config['omega_vector'], dtype=np.float32)
         Aij = np.array(config['Aij'], dtype=np.float32)
         timer = Timer().start()
-        pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
+        pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
         time_output_array_length = config['N']
         pendulum_phase_output_array = np.transpose(np.array(pendulum_phase_output_array))
         #print(pendulum_phase_output_array)
@@ -79,7 +74,7 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=
         omega_vector = np.array(config['omega_vector'], dtype=np.float32)
         Aij = np.array(config['Aij'], dtype=np.float32)
 
-        pendulum_phase_output_array, pendulum_time_output_array = ad(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
+        pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
         time_output_array_length = config['N']
         r_array = get_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
         n = int(time_output_array_length/2)
@@ -90,7 +85,7 @@ def computeRLSystemOCL(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=
     return (lin_out, r_out)
 
 def KAnalis(lambd=0.1, oscillators_number=1000, topology="smallWorld"):
-    config = create_config(lambd=lambd, oscillators_number=oscillators_number, topology=topology)
+    config = create_config(lambd=lambd, oscillators_number=oscillators_number, topology=topology, filename=None)
     Aij = np.array(config["Aij"])
 
     # cut in, because cant insert itself into ap, there are only plots possible
@@ -113,9 +108,6 @@ def KAnalis(lambd=0.1, oscillators_number=1000, topology="smallWorld"):
 
     nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
     return tuple(nodRankSeries.values.T)
-
-
-# TODO make default value for text lines
 
 
 if __name__ == '__main__':
