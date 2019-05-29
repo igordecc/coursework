@@ -96,8 +96,8 @@ def compute_graph_properties_for_system(lambd=0.1, oscillators_number=1000, topo
     centrality = nx.degree_centrality(G).values()
     print("graph degree_centrality, max: ", max(centrality), " ; min: ",min(centrality))
     print("graph degree_histogram: ",G.degree())
-    print("graph diameter: ",nx.diameter(G))
-    print("graph clustering coefficient: ", nx.average_clustering(G))
+    # print("graph diameter: ",nx.diameter(G))
+    # print("graph clustering coefficient: ", nx.average_clustering(G))
 
     listNum = []
     for i in range(Aij.shape[0]):
