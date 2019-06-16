@@ -3,7 +3,7 @@ import configparser
 import networkx
 
 
-def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.ini', topology="fullyConnected"):
+def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.ini', topology="fullyConnected", reconnectionProbability = 1, neighbours = 10):
     """
 
     :param topology:
@@ -18,13 +18,12 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
     config['lambd'] = lambd
     config['omega_vector'] = [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)]
 
-    connectionProbability = 0.6     # probability of random connections
-    neighbours = 4
+         # probability of random connections
     topologydict = {
         "fullyConnected".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, p=1),
-        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, connectionProbability),
+        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, reconnectionProbability),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
-        "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, connectionProbability),
+        "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),
     }
     config['topology'] = topologydict[topology.lower()]()
     config['Aij'] = networkx.to_numpy_array(config['topology'])

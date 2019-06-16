@@ -1,12 +1,16 @@
+# TODO plot lables
+# TODO plot grid
 import sys
 
 import numpy as np
 from PyQt5.QtCore import pyqtSlot
 # PyQt5 UI stuff. Widjets, midjets etc.
 from PyQt5.QtWidgets import QLineEdit, QApplication, QPushButton, QSizePolicy, QGroupBox, QDialog, QVBoxLayout, QGridLayout, QLabel
+
 # matplot libraries need to do plotting stuff
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
 
 # project modules used in this one
 import shell
@@ -70,10 +74,10 @@ class App(QDialog):
         self.graphGroupBox = QGroupBox("graph properties")
         self.globalLayout.addWidget(self.graphGroupBox, gRowIndex, 0)
         model = shell.compute_graph_properties_for_system
-        self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
+        self.figure.append(PlotCanvas(self, model=model, width=5, height=4, lables=("xlable","ylable")))
         self.globalLayout.addWidget(self.figure[gRowIndex], gRowIndex, 1)
 
-        localLayout = LocalLayout(("lambd", "oscillators_number", "topology"), "evaluate", num=gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
+        localLayout = LocalLayout(("oscillators_number", "topology", "reconnectionProbability", "neighbours"), "evaluate", num=gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
         self.graphGroupBox.setLayout(localLayout.localLayout)
 
         self.horizontalGroupBox.setLayout(self.globalLayout)
@@ -128,10 +132,15 @@ class PlotCanvas(FigureCanvas):
     """
     # we need to create plot object. To Do that, we use FigureCanvas-like class.
     """
-    def __init__(self, parent=None, model=None, width=5, height=4, dpi=100):
+    def __init__(self, parent=None, model=None, width=5, height=4, dpi=100, lables = None):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.model = model
         self.axes = fig.add_subplot(111)
+
+        if lables:
+            self.xlable, self.ylable = lables
+        else:
+            self.xlable = None
 
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
@@ -144,7 +153,8 @@ class PlotCanvas(FigureCanvas):
 
     def plot(self, **kwargs):
         # is plot function, that plot a plot, then you call the plot()
-        ax = self.figure.add_subplot(111)
+        ax = self.figure.add_subplot(self.axes)
+        # ax.set_xlable("sdfsdf")
         ax.cla()
         output_array = self.model(**kwargs)
 
@@ -156,8 +166,12 @@ class PlotCanvas(FigureCanvas):
             for pendulum in output_array:
                 ax.plot(np.linspace(0, ln, ln), pendulum)
 
-        ax.set_title('PyQt Matplotlib Example')
+        if self.xlable:
+            ax.set_xlable = self.xlable
+            ax.set_ylable = self.ylable
+
         self.draw()
+
 
 
 def init_app():

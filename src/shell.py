@@ -86,8 +86,15 @@ def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, osci
     return lambd_out, r_out
 
 
-def compute_graph_properties_for_system(lambd=0.1, oscillators_number=1000, topology="smallWorld"):
-    config = create_config(lambd=lambd, oscillators_number=oscillators_number, topology=topology, filename=None)
+def compute_graph_properties_for_system(oscillators_number=1000,
+                                        topology="smallWorld",
+                                        reconnectionProbability = 1,
+                                        neighbours=10
+                                        ):
+    config = create_config(oscillators_number=oscillators_number,
+                           topology=topology, filename=None,
+                           reconnectionProbability = reconnectionProbability,
+                           neighbours=neighbours)
     Aij = np.array(config["Aij"])
 
     # cut in, because cant insert itself into ap, there are only plots possible
@@ -95,20 +102,35 @@ def compute_graph_properties_for_system(lambd=0.1, oscillators_number=1000, topo
 
     centrality = nx.degree_centrality(G).values()
     print("graph degree_centrality, max: ", max(centrality), " ; min: ",min(centrality))
-    print("graph degree_histogram: ",G.degree())
+    print("graph degree_histogram: ", G.degree())
     # print("graph diameter: ",nx.diameter(G))
     # print("graph clustering coefficient: ", nx.average_clustering(G))
 
-    listNum = []
-    for i in range(Aij.shape[0]):
-        conNumNode = 0
-        for j in range(Aij.shape[1]):
-            conNumNode += Aij[i][j]
-        listNum.append(conNumNode)
-    listNum = np.array(listNum)
 
-    nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
-    return tuple(nodRankSeries.values.T)
+    def find_rank_diagram_series(Aij):
+        """
+        1. count for all nods number of dependencies (1- CONNECTION 0 - NO CONNECTION)
+        2. with pandas count number of nods with each rank
+
+        :param Aij: insert Adjacency matrix Aij
+        :return: diagram data
+        """
+
+        listNum = []
+        for i in range(Aij.shape[0]):
+            conNumNode = 0
+            for j in range(Aij.shape[1]):
+                if Aij[i][j]:
+                    conNumNode += 1
+            listNum.append(conNumNode)
+        listNum = np.array(listNum)     # to numpy array
+
+        # Compute a histogram of the counts of non-null values.
+        nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
+        return tuple(nodRankSeries.values.T)
+
+    diagram_data = find_rank_diagram_series(Aij)
+    return diagram_data
 
 
 if __name__ == '__main__':
