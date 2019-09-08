@@ -14,10 +14,11 @@ import numpy as np
 import pandas as pd
 
 from matplotlib import pyplot
+from matplotlib import pyplot as plt
 
-osc_number = 200
-neighbours = 4
-connectionProb = 0.04
+osc_number = 50
+neighbours = 5
+connectionProb = 1.
 
 
 ####______func section_____
@@ -66,7 +67,15 @@ def find_rank_diagram_series_for_Graph(Graph):
 
     # Compute a histogram of the counts of non-null values.
     nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
+
+    # Compute hand-writen
+    summed_1d_Aij = np.sum(Aij, 0)
+    print(np.unique(summed_1d_Aij))
+
     return tuple(nodRankSeries.values.T)
+
+
+
 
 
 #-------------------------
@@ -143,20 +152,39 @@ graph = [
 ]
 
 def display_stats(Graph):
-    centrality = nx.degree_centrality(Graph).values()
-    print("graph degree_centrality, max: ", max(centrality), " ; min: ", min(centrality))
-    print("graph degree_histogram: ", Graph.degree())
-    print("graph diameter: ", nx.diameter(Graph))
-    print("graph clustering coefficient: ", nx.average_clustering(Graph))
+    # centrality = nx.degree_centrality(Graph).values()
+    # print("graph degree_centrality, max: ", max(centrality), " ; min: ", min(centrality))
+    # print("graph degree_histogram: ", Graph.degree())
+    # print("graph diameter: ", nx.diameter(Graph))
+    # print("graph clustering coefficient: ", nx.average_clustering(Graph))
 
 
-    networkx.draw(Graph)
-    pyplot.show()
-    pyplot.clf()
+    # networkx.draw(Graph)
+    # pyplot.show()
+    # pyplot.clf()
 
-    pyplot.plot(*find_rank_diagram_series_for_Graph(Graph))
+    fig, ax = plt.subplots(1,1)
+
+    position_list, data = find_rank_diagram_series_for_Graph(Graph)
+
+    def do_data_series(data_size):
+        data_2d_array = []
+        for i in range(data_size):
+            position, data = find_rank_diagram_series_for_Graph(Graph)
+            data_2d_array.append(data)
+        multidata_per_position = np.array(data_2d_array)
+        return multidata_per_position
+
+
+    data = do_data_series(data_size=100)
+    ax.violinplot(data)
+
+
+    # pyplot.plot(*find_rank_diagram_series_for_Graph(Graph), ".")
     pyplot.show()
 ##_______________________
 
 if __name__ == '__main__':
-    display_stats(graph[1])
+    # display_stats(graph[0])
+    nx.draw(graph[0])
+    plt.show()
