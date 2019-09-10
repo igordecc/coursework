@@ -9,33 +9,47 @@ from matplotlib import pyplot as plt
 
 # this section search standart diagram
 
-def find_rank_diagram_series(Aij):
+def find_rank_diagram_series(Aij_2d_adjacency_matrix):
     """
     1. count for all nods number of dependencies (1- CONNECTION 0 - NO CONNECTION)
     2. with pandas count number of nods with each rank
 
-    :param Aij: insert Adjacency matrix Aij
+    :param Aij_2d_adjacency_matrix: insert Adjacency matrix Aij
     :return: diagram data
     """
+    """
+    why?
+    we need the plot "chance to meet the node from number of the node neighbours"
+    """
 
-    listNum = []
-    for i in range(Aij.shape[0]):
-        conNumNode = 0
-        for j in range(Aij.shape[1]):
-            if Aij[i][j]:
-                conNumNode += 1
-        listNum.append(conNumNode)
-    listNum = np.array(listNum)  # to numpy array
+    def function_counts_connections_number_for_one_node_for_every_node(Aij_2d_adjacency_matrix):
+        counted_neighbours_list = []
+        for i in range(Aij_2d_adjacency_matrix.shape[0]):
+            node_neighbours_number_counter = 0
+            for j in range(Aij_2d_adjacency_matrix.shape[1]):
+                if Aij_2d_adjacency_matrix[i][j]:
+                    node_neighbours_number_counter += 1
+            counted_neighbours_list.append(node_neighbours_number_counter)
+        counted_neighbours_list = np.array(counted_neighbours_list)  # to numpy array
+        return counted_neighbours_list
+
+    list_of_node_neighbours_number = function_counts_connections_number_for_one_node_for_every_node(Aij_2d_adjacency_matrix)
+
+    def count_all_elements_with_the_same_value_in_1d_matrix(matrix_of_1d):
+        nodRankSeries = pd.value_counts(matrix_of_1d).sort_index().reset_index()
+        values_list, number_of_encountering_list = tuple(nodRankSeries.values.T)
+        return values_list, number_of_encountering_list
 
     # Compute a histogram of the counts of non-null values.
-    nodRankSeries = pd.value_counts(listNum).sort_index().reset_index()
+    nodRankSeries = pd.value_counts(list_of_node_neighbours_number).sort_index().reset_index()
+
     return tuple(nodRankSeries.values.T)
 
 # next we make it log sclae and ordinat-normalized
 
-def make_graph(i,
+def make_graph(graph_number_to_choose,
                osc_number=1000,
-               neighbours = 5,
+               neighbours = 10,
                connectionProb = 1.,
                ):
     graph = [
@@ -44,17 +58,44 @@ def make_graph(i,
         networkx.fast_gnp_random_graph(osc_number, connectionProb),
         networkx.fast_gnp_random_graph(osc_number, p=1)
     ]
-    return graph[i]
+    return graph[graph_number_to_choose]
+
+def linear_aproximate(x,y):
+    poloinomial_coeffitients = np.polyfit(x, y, 1)
+    print(poloinomial_coeffitients)
+    poly_function = np.poly1d(poloinomial_coeffitients)
+
+
+    def linear_function(x):
+        y = x*poloinomial_coeffitients[0] + poloinomial_coeffitients[1]
+        return y
+    x1 = np.min(x)
+    y1 = linear_function(x1)
+    x2 = np.max(x)
+    y2 = linear_function(x2)
+
+    print(x,y)
+    line = poly_function(x)
+
+    plt.plot([x1,x2], [y1, y2], 'r-')
 
 
 if __name__ == '__main__':
     G = make_graph(1)
     Aij = nx.to_numpy_array(G)
-    diagram_data = find_rank_diagram_series(Aij)
+    diagram_data = (find_rank_diagram_series(Aij))
 
-    diagram_data = (diagram_data[0] , diagram_data[1]/max(diagram_data[1]))    # y normalisation
-    print(*diagram_data)
-    plt.plot(*diagram_data)
+    k = diagram_data[0]
+    P_k = diagram_data[1]/max(diagram_data[1])
+
+    # diagram_data = list(zip(diagram_data[0] , diagram_data[1]/max(diagram_data[1])))    # y normalisation
+    # diagram_data = diagram_data[0] , diagram_data[1]/max(diagram_data[1])   # y normalisation
+    # print(np.log(k), np.log(P_k))
+    plt.plot(*diagram_data, ".")
+
+    linear_aproximate(k, P_k)
+
+
     plt.grid()
     plt.xscale("log")
     plt.yscale("log")
