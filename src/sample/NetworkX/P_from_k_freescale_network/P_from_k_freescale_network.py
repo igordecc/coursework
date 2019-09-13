@@ -62,28 +62,43 @@ def make_graph(graph_number_to_choose,
 
 def linear_aproximate(x,y):
     poloinomial_coeffitients = np.polyfit(x, y, 1)
-    print(poloinomial_coeffitients)
-    poly_function = np.poly1d(poloinomial_coeffitients)
 
+    # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
+    # line = poly_function_THAT_DOESNT_WORK(x)
 
     def linear_function(x):
         y = x*poloinomial_coeffitients[0] + poloinomial_coeffitients[1]
         return y
-    x1 = np.min(x)
-    y1 = linear_function(x1)
-    x2 = np.max(x)
-    y2 = linear_function(x2)
 
-    print(x,y)
-    line = poly_function(x)
+    def draw_simple_aproximation_line_on_2_points():
+        x1 = np.min(x)
+        y1 = linear_function(x1)
+        x2 = np.max(x)
+        y2 = linear_function(x2)
+        plt.plot([x1,x2], [y1, y2], 'r-')
 
-    plt.plot([x1,x2], [y1, y2], 'r-')
+    def draw_line_with_all_x_points():
+        new_y = linear_function(x)
+        plt.plot(x, new_y, 'g-')
 
+    def return_line_with_all_x_points():
+        new_y = linear_function(x)
+        return new_y
+        # print("new_y\n", new_y)
+
+    new_y = return_line_with_all_x_points()
+    new_exp_y = np.e**new_y
+    print(new_exp_y)
+    plt.plot(x, new_exp_y, "m-")
 
 if __name__ == '__main__':
     G = make_graph(1)
     Aij = nx.to_numpy_array(G)
     diagram_data = (find_rank_diagram_series(Aij))
+
+
+    diagram_data_for_aproximation = np.copy(diagram_data)
+    diagram_data_for_default_plot = np.copy(diagram_data)
 
     def compute_x_and_y_from(data):
         x = np.log(data[0])
@@ -91,7 +106,14 @@ if __name__ == '__main__':
         new_data = x, y
         return new_data
 
-    new_diagram_data = compute_x_and_y_from(diagram_data)
+    def compute_x_and_y_from_for_default(data):
+        x = data[0]
+        y = data[1]/max(data[1])
+        new_data = x, y
+        return new_data
+
+    new_diagram_data_ = compute_x_and_y_from(diagram_data_for_aproximation)
+    new_diagram_data_default = compute_x_and_y_from_for_default(diagram_data_for_default_plot)
 
     def do_linear_aproximation_plot(diagram_data):
         linear_aproximate(*diagram_data)
@@ -101,12 +123,12 @@ if __name__ == '__main__':
         plt.plot(*diagram_data, ".")
 
 
-    do_linear_aproximation_plot(np.copy(new_diagram_data))
-    draw_main_plot(np.copy(new_diagram_data))
+    do_linear_aproximation_plot(np.copy(new_diagram_data_))
+    draw_main_plot(np.copy(new_diagram_data_default))
 
     plt.grid()
-    # plt.xscale("log")
-    # plt.yscale("log")
+    plt.xscale("log")
+    plt.yscale("log")
     plt.xlabel("k")
     plt.ylabel("P(k)")
     plt.show()
