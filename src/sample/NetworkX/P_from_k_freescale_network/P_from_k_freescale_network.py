@@ -85,26 +85,28 @@ if __name__ == '__main__':
     Aij = nx.to_numpy_array(G)
     diagram_data = (find_rank_diagram_series(Aij))
 
-    def do_linear_aproximation_plot():
-        aproxipation_diagram_data = np.copy(diagram_data)
+    def compute_x_and_y_from(data):
+        x = np.log(data[0])
+        y = np.log(data[1])/np.log(max(data[1]))
+        new_data = x, y
+        return new_data
 
-        k = aproxipation_diagram_data[0]
-        P_k = aproxipation_diagram_data[1]/max(aproxipation_diagram_data[1])
-        linear_aproximate(k, P_k)
+    new_diagram_data = compute_x_and_y_from(diagram_data)
+
+    def do_linear_aproximation_plot(diagram_data):
+        linear_aproximate(*diagram_data)
 
 
     def draw_main_plot(diagram_data):
-        diagram_data = diagram_data[0] , diagram_data[1]/max(diagram_data[1])   # y normalisation
-        # print(np.log(k), np.log(P_k))
         plt.plot(*diagram_data, ".")
 
 
-    do_linear_aproximation_plot()
-    draw_main_plot(diagram_data)
+    do_linear_aproximation_plot(np.copy(new_diagram_data))
+    draw_main_plot(np.copy(new_diagram_data))
 
     plt.grid()
-    plt.xscale("log")
-    plt.yscale("log")
+    # plt.xscale("log")
+    # plt.yscale("log")
     plt.xlabel("k")
     plt.ylabel("P(k)")
     plt.show()
