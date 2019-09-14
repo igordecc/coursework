@@ -3,7 +3,6 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from matplotlib import pyplot
 from matplotlib import pyplot as plt
 
 
@@ -35,11 +34,6 @@ def find_rank_diagram_series(Aij_2d_adjacency_matrix):
 
     list_of_node_neighbours_number = function_counts_connections_number_for_one_node_for_every_node(Aij_2d_adjacency_matrix)
 
-    def count_all_elements_with_the_same_value_in_1d_matrix(matrix_of_1d):
-        nodRankSeries = pd.value_counts(matrix_of_1d).sort_index().reset_index()
-        values_list, number_of_encountering_list = tuple(nodRankSeries.values.T)
-        return values_list, number_of_encountering_list
-
     # Compute a histogram of the counts of non-null values.
     nodRankSeries = pd.value_counts(list_of_node_neighbours_number).sort_index().reset_index()
 
@@ -60,35 +54,56 @@ def make_graph(graph_number_to_choose,
     ]
     return graph[graph_number_to_choose]
 
-def linear_aproximate(x,y):
-    poloinomial_coeffitients = np.polyfit(x, y, 1)
+def linear_function(x, coefficients):
+    y = x * coefficients[0] + coefficients[1]
+    return y
 
+
+def linear_approximate_v0(x, y):
+    # TWO linear points for linear plot
+
+    poloinomial_coeffitients = np.polyfit(x, y, 1)
+    linear_function(x, poloinomial_coeffitients)
     # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
     # line = poly_function_THAT_DOESNT_WORK(x)
 
-    def linear_function(x):
-        y = x*poloinomial_coeffitients[0] + poloinomial_coeffitients[1]
-        return y
+    x1 = np.min(x)
+    y1 = linear_function(x1)
+    x2 = np.max(x)
+    y2 = linear_function(x2)
+    plt.plot([x1, x2], [y1, y2], 'r-')
 
-    def draw_simple_aproximation_line_on_2_points():
-        x1 = np.min(x)
-        y1 = linear_function(x1)
-        x2 = np.max(x)
-        y2 = linear_function(x2)
-        plt.plot([x1,x2], [y1, y2], 'r-')
+def linear_approximate_v1(x,y):
+    # linear points for linear plot
 
-    def draw_line_with_all_x_points():
-        new_y = linear_function(x)
-        plt.plot(x, new_y, 'g-')
+    poloinomial_coeffitients = np.polyfit(x, y, 1)
+    linear_function(x, poloinomial_coeffitients)
+    # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
+    # line = poly_function_THAT_DOESNT_WORK(x)
 
-    def return_line_with_all_x_points():
-        new_y = linear_function(x)
-        return new_y
-        # print("new_y\n", new_y)
+    new_y = linear_function(x)
+    plt.plot(x, new_y, 'g-')
 
-    new_y = return_line_with_all_x_points()
-    new_exp_y = np.e**new_y
+
+
+
+
+
+
+
+def linear_aproximate(x,y):
+    poloinomial_coeffitients = np.polyfit(x, y, 1)
+    print(poloinomial_coeffitients)
+    # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
+    # line = poly_function_THAT_DOESNT_WORK(x)
+
+    new_y = linear_function(x,poloinomial_coeffitients)
+    new_exp_y = 10**new_y
+    # print(new_exp_y)
+    # plt.plot(x, new_exp_y, "m-")
+    print(new_y)
     print(new_exp_y)
+    print(y)
     plt.plot(x, new_exp_y, "m-")
 
 if __name__ == '__main__':
@@ -132,3 +147,10 @@ if __name__ == '__main__':
     plt.xlabel("k")
     plt.ylabel("P(k)")
     plt.show()
+
+    help(plt.loglog)
+
+    #TODO
+    #1 prcompute log
+    #2 precompute aproximation
+    #3 plot
