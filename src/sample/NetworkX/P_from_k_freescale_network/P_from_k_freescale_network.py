@@ -54,70 +54,34 @@ def make_graph(graph_number_to_choose,
     ]
     return graph[graph_number_to_choose]
 
+
 def linear_function(x, coefficients):
     y = x * coefficients[0] + coefficients[1]
     return y
 
 
-def linear_approximate_v0(x, y):
-    # TWO linear points for linear plot
-
-    poloinomial_coeffitients = np.polyfit(x, y, 1)
-    linear_function(x, poloinomial_coeffitients)
-    # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
-    # line = poly_function_THAT_DOESNT_WORK(x)
-
-    x1 = np.min(x)
-    y1 = linear_function(x1)
-    x2 = np.max(x)
-    y2 = linear_function(x2)
-    plt.plot([x1, x2], [y1, y2], 'r-')
-
-def linear_approximate_v1(x,y):
-    # linear points for linear plot
-
-    poloinomial_coeffitients = np.polyfit(x, y, 1)
-    linear_function(x, poloinomial_coeffitients)
-    # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
-    # line = poly_function_THAT_DOESNT_WORK(x)
-
-    new_y = linear_function(x)
-    plt.plot(x, new_y, 'g-')
-
-
-
-
-
-
-
-
 def linear_aproximate(x,y):
     poloinomial_coeffitients = np.polyfit(x, y, 1)
-    print(poloinomial_coeffitients)
-    # poly_function_THAT_DOESNT_WORK = np.poly1d(poloinomial_coeffitients)
-    # line = poly_function_THAT_DOESNT_WORK(x)
 
+    polyfit_function = np.poly1d(poloinomial_coeffitients)
+    funced_y = polyfit_function(x)
+
+    print(poloinomial_coeffitients)
     new_y = linear_function(x,poloinomial_coeffitients)
-    new_exp_y = 10**new_y
-    # print(new_exp_y)
-    # plt.plot(x, new_exp_y, "m-")
-    print(new_y)
-    print(new_exp_y)
-    print(y)
-    plt.plot(x, new_exp_y, "m-")
+    plt.plot(x, new_y, "m-")
+    plt.plot(x, funced_y, "g-")
+
 
 if __name__ == '__main__':
     G = make_graph(1)
     Aij = nx.to_numpy_array(G)
-    diagram_data = (find_rank_diagram_series(Aij))
+    diagram_data = find_rank_diagram_series(Aij)
 
-
-    diagram_data_for_aproximation = np.copy(diagram_data)
-    diagram_data_for_default_plot = np.copy(diagram_data)
+    diagram_data_for_approximation = np.copy(diagram_data)
 
     def compute_x_and_y_from(data):
-        x = np.log(data[0])
-        y = np.log(data[1])/np.log(max(data[1]))
+        x = np.log10(data[0])
+        y = np.log10(data[1]/max(data[1]))
         new_data = x, y
         return new_data
 
@@ -127,8 +91,7 @@ if __name__ == '__main__':
         new_data = x, y
         return new_data
 
-    new_diagram_data_ = compute_x_and_y_from(diagram_data_for_aproximation)
-    new_diagram_data_default = compute_x_and_y_from_for_default(diagram_data_for_default_plot)
+    new_diagram_data_ = compute_x_and_y_from_for_default(diagram_data_for_approximation)
 
     def do_linear_aproximation_plot(diagram_data):
         linear_aproximate(*diagram_data)
@@ -138,19 +101,17 @@ if __name__ == '__main__':
         plt.plot(*diagram_data, ".")
 
 
-    do_linear_aproximation_plot(np.copy(new_diagram_data_))
-    draw_main_plot(np.copy(new_diagram_data_default))
+    # do_linear_aproximation_plot(np.copy(new_diagram_data_))
+    draw_main_plot(np.copy(new_diagram_data_))
 
     plt.grid()
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("k")
-    plt.ylabel("P(k)")
+
+    plt.xlabel("k, log_10")
+    plt.ylabel("P(k), log_10")
     plt.show()
 
-    help(plt.loglog)
-
-    #TODO
-    #1 prcompute log
-    #2 precompute aproximation
-    #3 plot
+    # TODO
+    # 1 prcompute log
+    # 2 precompute aproximation
+    # 3 plot without loglog patplotlib
+    # 4 create desctiption for axes of numpy log log
