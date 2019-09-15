@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 # this section search standart diagram
 
-def find_rank_diagram_series(Aij_2d_adjacency_matrix):
+def compute_rank_diagram(Aij_2d_adjacency_matrix):
     """
     1. count for all nods number of dependencies (1- CONNECTION 0 - NO CONNECTION)
     2. with pandas count number of nods with each rank
@@ -43,13 +43,13 @@ def find_rank_diagram_series(Aij_2d_adjacency_matrix):
 
 def make_graph(graph_number_to_choose,
                osc_number=1000,
-               neighbours = 10,
-               connectionProb = 1.,
+               neighbours=100,
+               reconnection_prob=0.1,
                ):
     graph = [
-        networkx.watts_strogatz_graph(osc_number, neighbours, connectionProb),
+        networkx.watts_strogatz_graph(osc_number, neighbours, reconnection_prob),
         nx.barabasi_albert_graph(osc_number, neighbours),
-        networkx.fast_gnp_random_graph(osc_number, connectionProb),
+        networkx.fast_gnp_random_graph(osc_number, reconnection_prob),
         networkx.fast_gnp_random_graph(osc_number, p=1)
     ]
     return graph[graph_number_to_choose]
@@ -60,7 +60,7 @@ def linear_function(x, coefficients):
     return y
 
 
-def linear_aproximate(x,y):
+def linear_approximate(x, y):
     poloinomial_coeffitients = np.polyfit(x, y, 1)
 
     polyfit_function = np.poly1d(poloinomial_coeffitients)
@@ -68,50 +68,70 @@ def linear_aproximate(x,y):
 
     print(poloinomial_coeffitients)
     new_y = linear_function(x,poloinomial_coeffitients)
-    plt.plot(x, new_y, "m-")
-    plt.plot(x, funced_y, "g-")
+    # plt.plot(x, new_y, "m-")
+    plt.plot(x, funced_y, "r-")
+
+
+def quadratic_approximate(x, y):
+    poloinomial_coeffitients = np.polyfit(x, y, 2)
+
+    polyfit_function = np.poly1d(poloinomial_coeffitients)
+    funced_y = polyfit_function(x)
+
+    print(poloinomial_coeffitients)
+    new_y = linear_function(x,poloinomial_coeffitients)
+    # plt.plot(x, new_y, "m-")
+    plt.plot(x, funced_y, "r-")
+
+
+def cubic_approximate(x, y):
+    poloinomial_coeffitients = np.polyfit(x, y, 3)
+
+    polyfit_function = np.poly1d(poloinomial_coeffitients)
+    funced_y = polyfit_function(x)
+
+    print(poloinomial_coeffitients)
+    new_y = linear_function(x,poloinomial_coeffitients)
+    # plt.plot(x, new_y, "m-")
+    plt.plot(x, funced_y, "r-")
+
+
+def compute_percentage_diagram_in_log_scale(data):
+    x = np.log10(data[0])
+    y = np.log10(data[1]/np.sum(data[1]))
+    new_data = x, y
+    return new_data
+
+def compute_percentage_diagram(data):
+    x = data[0]
+    y = data[1]/np.sum(data[1])
+    new_data = x, y
+    return new_data
 
 
 if __name__ == '__main__':
-    G = make_graph(1)
+    G = make_graph(0)
     Aij = nx.to_numpy_array(G)
-    diagram_data = find_rank_diagram_series(Aij)
+    diagram_data = compute_rank_diagram(Aij)
 
     diagram_data_for_approximation = np.copy(diagram_data)
 
-    def compute_x_and_y_from(data):
-        x = np.log10(data[0])
-        y = np.log10(data[1]/max(data[1]))
-        new_data = x, y
-        return new_data
+    # choose one
+    # percent_diagram_data = compute_percentage_diagram_in_log_scale(diagram_data_for_approximation)
+    percent_diagram_data = compute_percentage_diagram(diagram_data_for_approximation)
 
-    def compute_x_and_y_from_for_default(data):
-        x = data[0]
-        y = data[1]/max(data[1])
-        new_data = x, y
-        return new_data
+    # choose one
+    # linear_approximate(*np.copy(percent_diagram_data))
+    # quadratic_approximate(*np.copy(percent_diagram_data))
+    cubic_approximate(*np.copy(percent_diagram_data))
 
-    new_diagram_data_ = compute_x_and_y_from_for_default(diagram_data_for_approximation)
-
-    def do_linear_aproximation_plot(diagram_data):
-        linear_aproximate(*diagram_data)
-
-
-    def draw_main_plot(diagram_data):
-        plt.plot(*diagram_data, ".")
-
-
-    # do_linear_aproximation_plot(np.copy(new_diagram_data_))
-    draw_main_plot(np.copy(new_diagram_data_))
+    plt.plot(*np.copy(percent_diagram_data), "-")
 
     plt.grid()
 
-    plt.xlabel("k, log_10")
-    plt.ylabel("P(k), log_10")
+    plt.xlabel("k")
+    plt.ylabel("P(k)")
     plt.show()
 
-    # TODO
-    # 1 prcompute log
-    # 2 precompute aproximation
-    # 3 plot without loglog patplotlib
-    # 4 create desctiption for axes of numpy log log
+
+
