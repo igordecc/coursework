@@ -48,6 +48,7 @@ def make_graph(graph_number_to_choose,
                ):
     graph = [
         networkx.watts_strogatz_graph(osc_number, neighbours, reconnection_prob),
+        nx.scale_free_graph(osc_number),
         nx.barabasi_albert_graph(osc_number, neighbours),
         networkx.fast_gnp_random_graph(osc_number, reconnection_prob),
         networkx.fast_gnp_random_graph(osc_number, p=1)
@@ -110,22 +111,22 @@ def compute_percentage_diagram(data):
 
 
 if __name__ == '__main__':
-    G = make_graph(0)
+    G = make_graph(1)
     Aij = nx.to_numpy_array(G)
     diagram_data = compute_rank_diagram(Aij)
 
     diagram_data_for_approximation = np.copy(diagram_data)
 
     # choose one
-    # percent_diagram_data = compute_percentage_diagram_in_log_scale(diagram_data_for_approximation)
-    percent_diagram_data = compute_percentage_diagram(diagram_data_for_approximation)
+    percent_diagram_data = compute_percentage_diagram_in_log_scale(diagram_data_for_approximation)
+    # percent_diagram_data = compute_percentage_diagram(diagram_data_for_approximation)
 
     # choose one
-    # linear_approximate(*np.copy(percent_diagram_data))
+    linear_approximate(*np.copy(percent_diagram_data))
     # quadratic_approximate(*np.copy(percent_diagram_data))
-    cubic_approximate(*np.copy(percent_diagram_data))
+    # cubic_approximate(*np.copy(percent_diagram_data))
 
-    plt.plot(*np.copy(percent_diagram_data), "-")
+    plt.plot(*np.copy(percent_diagram_data), ".")
 
     plt.grid()
 
