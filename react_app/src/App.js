@@ -1,4 +1,7 @@
 import React from 'react';
+// canvas simple example
+// created from w3c canvas tutorial and https://itnext.io/using-react-hooks-with-canvas-f188d6e416c0
+// create simple canvas using useRef React hook
 
 function App() {
   const canvasRef = React.useRef(null)
