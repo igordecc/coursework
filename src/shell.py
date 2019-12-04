@@ -82,7 +82,7 @@ def compute_system_ocl_for_server(osc_min=5, osc_max=6, osc_step=10):
                                                                                                      oscillators_number=config['oscillators_number'],
                                                                                                      N_parts=config['N'])
         pendulum_phase_output_array = pendulum_phase_output_array
-        return pendulum_phase_output_array
+        return pendulum_phase_output_array, config['Aij']
 
 def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10):
     r_out = []

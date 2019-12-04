@@ -1,15 +1,12 @@
 import React from 'react';
-import loadJsonData from './loadJsonData';
+
 // canvas simple example
 // created from w3c canvas tutorial and https://itnext.io/using-react-hooks-with-canvas-f188d6e416c0
 // create simple canvas using useRef React hook
 
-
-
-
+const DataURL = `http://localhost:5000/`
 const SCALE = 0.3
 const OFFSET = 80
-
 
 function draw_circle(ctx, location) {
   ctx.save()
@@ -38,18 +35,36 @@ function usePersistentState(init) {
   return [value, setValue]
 }
 
-function App() {
-  loadJsonData()
-  const canvasRef = React.useRef(null)
-  const [locations, setLocations] = usePersistentState([])
-  console.log(locations)
+  // our second custom hook: a composition of the first custom hook
+  function usePersistentCanvas() {
+    const [locations, setLocations] = usePersistentState([])
 
-  React.useEffect( () => {
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
-    locations.forEach(location => draw_circle(ctx, location))
+    const canvasRef = React.useRef(null)
+
+    React.useEffect(() => {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+      locations.forEach(location => draw_circle(ctx, location))
+    })
+    return [locations, setLocations, canvasRef]
+  }
+
+// load and save server Data to local storage 
+function usePersistentData(init){
+  const [data, setData] = React.useState(
+    JSON.parse(localStorage.getItem('osc-data')) || init
+  )
+  React.useEffect(() => {
+    localStorage.setItem('osc-data', JSON.stringify(data))
   })
+  return [data, setData]
+}
+
+function App() {
+
+  const [locations, setLocations, canvasRef] = usePersistentCanvas([])
+  const [data, setData] = usePersistentData({});
 
   function handleCanvasClick (e) {
     const newLocation = {x: e.clientX, y: e.clientY}
@@ -64,28 +79,20 @@ function App() {
     setLocations(locations.slice(0,-1))
   }
 
-  
-
-  // our second custom hook: a composition of the first custom hook
-  function usePersistentCanvas() {
-    const [locations, setLocation] = usePersistentState([])
-
-    const canvasRef = React.useRef(null)
-
-    React.useEffect(() => {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
-      ctx.clearReact(0, 0, window.innerWidth, window.innerHeight)
-      locations.forEach(location => draw_circle(ctx, location))
-    })
-    return [locations, setLocations, canvasRef]
+  function handleReloadOscillatorsData (){
+    
+    fetch(DataURL).
+    then(result => result.json()).
+    then(e => (setData(e))).
+    catch(error => console.log(error))
+    console.log(data)
   }
-
   return (
     <> 
       <div className="controls">
         <button onClick={handleClear}>Clear</button>
         <button onClick={handleUndo}>Undo</button>
+        <button onClick={handleReloadOscillatorsData}>Reload</button>
       </div>
       <canvas 
         ref={canvasRef}
