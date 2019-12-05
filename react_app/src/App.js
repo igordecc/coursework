@@ -1,5 +1,5 @@
 import React from 'react';
-
+var _ = require('underscore');
 // canvas simple example
 // created from w3c canvas tutorial and https://itnext.io/using-react-hooks-with-canvas-f188d6e416c0
 // create simple canvas using useRef React hook
@@ -21,7 +21,7 @@ function draw_circle(ctx, location) {
   ctx.fillStyle = 'rgb(255, 51, 204)';
   ctx.fill();
   ctx.stroke();
-  ctx.restore()
+  ctx.restore();
 }
 
 // custom hook
@@ -61,10 +61,22 @@ function usePersistentData(init){
   return [data, setData]
 }
 
+function usePersistentRandomLocations(init) {
+  const [locations, setLocations] = React.useState(
+    JSON.parse(localStorage.getItem('osc-locations')) || init
+  )
+  React.useEffect(()=>{
+    localStorage.setItem('osc-locations', JSON.stringify(locations))
+  })
+  return [locations, setLocations]
+}
+
 function App() {
 
-  const [locations, setLocations, canvasRef] = usePersistentCanvas([])
+  const [locations, setLocations, canvasRef] = usePersistentCanvas([]);
   const [data, setData] = usePersistentData({});
+  const [oscNumber, setOscNumber] = React.useState(null);
+  const [randomLocations, setRandomLocations] = usePersistentRandomLocations([]);
 
   function handleCanvasClick (e) {
     const newLocation = {x: e.clientX, y: e.clientY}
@@ -80,10 +92,13 @@ function App() {
   }
 
   function handleReloadOscillatorsData (){
-    
     fetch(DataURL).
     then(result => result.json()).
-    then(e => (setData(e))).
+    then(e => {
+      setData(e);
+      console.log(_.size(e.Aij[0]))
+      
+    }).
     catch(error => console.log(error))
     console.log(data)
   }
