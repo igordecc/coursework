@@ -1,7 +1,7 @@
 import random
 import configparser
 import networkx
-
+from matplotlib import pyplot
 
 def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.ini', topology="fullyConnected", reconnectionProbability = 1, neighbours = 10):
     """
@@ -24,8 +24,10 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
         "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, reconnectionProbability),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
         "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),
+        "barbell".lower(): lambda: networkx.barbell_graph(100,4)
     }
     config['topology'] = topologydict[topology.lower()]()
+    print(networkx.draw(config['topology']))
     config['Aij'] = networkx.to_numpy_array(config['topology'])
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
     config['t0'] = 0
@@ -43,4 +45,8 @@ def create_config(lambd=0.7, oscillators_number=10, filename='kuramoto_config.in
 
 if __name__=="__main__":
     oscillators_number = 112
-    create_config(oscillators_number)
+    config = create_config(oscillators_number=oscillators_number, topology="barbell")
+
+    #print(networkx.draw(networkx.barbell_graph(5,1)))
+    pyplot.show()
+    print("ALOOOOO")
