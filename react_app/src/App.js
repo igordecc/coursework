@@ -3,23 +3,34 @@ var _ = require('underscore');
 // canvas simple example
 // created from w3c canvas tutorial and https://itnext.io/using-react-hooks-with-canvas-f188d6e416c0
 // create simple canvas using useRef React hook
+// TODO: infuse lines with magnetta color
+// TODO: bind draw lines with reaload function (also use screen_lines list)
 
 const DataURL = `http://localhost:5000/`
 const SCALE = 0.3
 const OFFSET = 80
 
+// canvas draw functions
 function draw_circle(ctx, location) {
-  ctx.save()
+  ctx.save();
   ctx.fillStyle = 'rgb(255, 51, 204)'
   ctx.shadowColor = 'dodgeblue'
   ctx.shadowBlue = 20   
-  ctx.save()
   ctx.scale(SCALE, SCALE)
   ctx.translate(location.x / SCALE - OFFSET, location.y / SCALE - OFFSET)
   ctx.beginPath();
   ctx.arc(100, 75, 50, 0, 2 * Math.PI);
   ctx.fillStyle = 'rgb(255, 51, 204)';
   ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw_line(ctx, xlocation) {
+  //location = x
+  ctx.save();
+  ctx.moveTo(xlocation, 0);
+  ctx.lineTo(xlocation, window.innerHeight)
   ctx.stroke();
   ctx.restore();
 }
