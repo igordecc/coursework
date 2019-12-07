@@ -24,60 +24,57 @@ function draw_circle(ctx, location) {
   ctx.restore();
 }
 
-// custom hook
-function usePersistentState(init) {
+// data cashing hook
+function usePersistentState(init, itemName='') {
   const [value, setValue] = React.useState(
-    JSON.parse(localStorage.getItem('draw-app')) || init
+    JSON.parse(localStorage.getItem(itemName)) || init
   )
   React.useEffect(() => {
-    localStorage.setItem('draw-app', JSON.stringify(value))
+    localStorage.setItem(itemName, JSON.stringify(value))
   })
   return [value, setValue]
 }
 
-  // our second custom hook: a composition of the first custom hook
-  function usePersistentCanvas() {
-    const [locations, setLocations] = usePersistentState([])
+// set canvas hook 
+// hook is a data managing function
+function usePersistentCanvas() {
+  const [locations, setLocations] = usePersistentState([], 'draw-app')
 
-    const canvasRef = React.useRef(null)
+  const canvasRef = React.useRef(null)
 
-    React.useEffect(() => {
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
-      locations.forEach(location => draw_circle(ctx, location))
-    })
-    return [locations, setLocations, canvasRef]
-  }
-
-// load and save server Data to local storage 
-function usePersistentData(init){
-  const [data, setData] = React.useState(
-    JSON.parse(localStorage.getItem('osc-data')) || init
-  )
+  // update canvas
   React.useEffect(() => {
-    localStorage.setItem('osc-data', JSON.stringify(data))
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
+    locations.forEach(location => draw_circle(ctx, location))
   })
+  return [locations, setLocations, canvasRef]
+}
+
+// set data hook
+function usePersistentData(init){
+  const [data, setData] = usePersistentState(init, 'osc-data')
+  
   return [data, setData]
 }
 
+// set locations hook
 function usePersistentRandomLocations(init) {
-  const [locations, setLocations] = React.useState(
-    JSON.parse(localStorage.getItem('osc-locations')) || init
-  )
-  React.useEffect(()=>{
-    localStorage.setItem('osc-locations', JSON.stringify(locations))
-  })
+  const [locations, setLocations] = usePersistentState(init, 'osc-locations')
+  
   return [locations, setLocations]
 }
 
+// Application render function
 function App() {
-
+  // states
   const [locations, setLocations, canvasRef] = usePersistentCanvas([]);
   const [data, setData] = usePersistentData({});
   const [oscNumber, setOscNumber] = React.useState(null);
   const [randomLocations, setRandomLocations] = usePersistentRandomLocations([]);
 
+  // handlers
   function handleCanvasClick (e) {
     const newLocation = {x: e.clientX, y: e.clientY}
     setLocations([...locations, newLocation])
@@ -91,17 +88,33 @@ function App() {
     setLocations(locations.slice(0,-1))
   }
 
-  function handleReloadOscillatorsData (){
-    fetch(DataURL).
+  function handleReloadOscillatorsData (){  
+    // connection to server
+    fetch(DataURL).           
     then(result => result.json()).
     then(e => {
       setData(e);
-      console.log(_.size(e.Aij[0]))
-      
     }).
     catch(error => console.log(error))
     console.log(data)
+
+    // main parameters
+    let oscillators_number = _.size(data.Aij[0])
+    let group_number = _.size(data.community_list)
+
+    // dividing screen acording to group size
+    let screen_lines = []
+    let vertical_line = 0
+    for (let i=0; i < group_number-1; i++) {
+      console.log(i)
+      let community_size = _.size(data.community_list[i])
+      vertical_line += window.innerWidth * (community_size / oscillators_number) 
+      screen_lines.push( vertical_line )
+    }
+    console.log(screen_lines)
+    
   }
+  // render
   return (
     <> 
       <div className="controls">
