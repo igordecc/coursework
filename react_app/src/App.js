@@ -3,8 +3,7 @@ var _ = require('underscore');
 // canvas simple example
 // created from w3c canvas tutorial and https://itnext.io/using-react-hooks-with-canvas-f188d6e416c0
 // create simple canvas using useRef React hook
-// TODO: infuse lines with magnetta color
-// TODO: bind draw lines with reaload function (also use screen_lines list)
+
 
 const DataURL = `http://localhost:5000/`
 const SCALE = 0.3
@@ -89,6 +88,7 @@ function App() {
   // states
   const [locations, setLocations, canvasRef] = usePersistentCanvas([]);
   const [data, setData] = usePersistentData({});
+  
   const [oscNumber, setOscNumber] = React.useState(null);
   const [randomLocations, setRandomLocations] = usePersistentRandomLocations([]);
 
@@ -123,25 +123,47 @@ function App() {
     // dividing screen acording to group size
     // var screen_lines = []  // at the constants
     let vertical_line = 0
-    for (let i=0; i < group_number-1; i++) {
+    screen_lines = []
+    for (let i=0; i < group_number; i++) {
       let community_size = _.size(data.community_list[i])
       vertical_line += window.innerWidth * (community_size / oscillators_number) 
       screen_lines.push( vertical_line )
     }
-    console.log(screen_lines)
-
-    for (let line_number=0; line_number < _.size(screen_lines); line_number++) {      
-      for (let i=0; i < oscillators_number; i++) {
-        
-        let randomX = 0  // random between sertain screen_lines
-        let randomY = 0  // random between sertain screen_lines
-
-        let newLocation = {x: randomX, y: randomY}
-        locations.push(newLocation)
-      }
+    console.log("screen lines:", screen_lines)
+    
+    // random normal distribution [0 ; 1]
+    function rand_normal() {
+      var u = 0, v = 0;
+      while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+      while(v === 0) v = Math.random();
+      let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+      num = num / 10.0 + 0.5; // Translate to 0 -> 1
+      if (num > 1 || num < 0) return rand_normal(); // resample between 0 and 1
+      return num;
     }
-    
-    
+
+    var calculate_oscillators = function () {
+      // for let _line in screen_lines
+      //for (let line_number=0; line_number < _.size(screen_lines); line_number++) {      
+        let _previous_line = 0
+        let community_list = data.community_list
+        for (let _line in community_list) {     
+        let _line_coordinate = screen_lines[_line]
+          for (let _oscillator in community_list[_line]) {
+            
+            console.log("screen line: ", screen_lines[_line])
+            console.log(_line_coordinate - _previous_line)
+            let randomX = _previous_line + (rand_normal()*(_line_coordinate - _previous_line))  // random between sertain screen_lines
+            let randomY = (rand_normal()*window.innerHeight)  // random between sertain screen_lines
+            
+            let newLocation = {x: randomX, y: randomY}
+            locations.push(newLocation)
+          }
+        _previous_line += _line_coordinate
+      }  
+    }
+
+    calculate_oscillators()
   }
   // render
   return (
