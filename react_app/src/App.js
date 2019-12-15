@@ -10,6 +10,10 @@ const DataURL = `http://localhost:5000/`
 const SCALE = 0.3
 const OFFSET = 80
 
+var oscillators_number = 0
+var group_number = 0
+var screen_lines = []
+
 // canvas draw functions
 function draw_circle(ctx, location) {
   ctx.save();
@@ -29,6 +33,8 @@ function draw_circle(ctx, location) {
 function draw_line(ctx, xlocation) {
   //location = x
   ctx.save();
+  ctx.lineWidth = '5';
+  ctx.strokeStyle = 'rgb(117, 26, 255)'
   ctx.moveTo(xlocation, 0);
   ctx.lineTo(xlocation, window.innerHeight)
   ctx.stroke();
@@ -59,6 +65,7 @@ function usePersistentCanvas() {
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
     locations.forEach(location => draw_circle(ctx, location))
+    screen_lines.forEach(line => draw_line(ctx, line))
   })
   return [locations, setLocations, canvasRef]
 }
@@ -110,19 +117,30 @@ function App() {
     console.log(data)
 
     // main parameters
-    let oscillators_number = _.size(data.Aij[0])
-    let group_number = _.size(data.community_list)
+    oscillators_number = _.size(data.Aij[0])
+    group_number = _.size(data.community_list)
 
     // dividing screen acording to group size
-    let screen_lines = []
+    // var screen_lines = []  // at the constants
     let vertical_line = 0
     for (let i=0; i < group_number-1; i++) {
-      console.log(i)
       let community_size = _.size(data.community_list[i])
       vertical_line += window.innerWidth * (community_size / oscillators_number) 
       screen_lines.push( vertical_line )
     }
     console.log(screen_lines)
+
+    for (let line_number=0; line_number < _.size(screen_lines); line_number++) {      
+      for (let i=0; i < oscillators_number; i++) {
+        
+        let randomX = 0  // random between sertain screen_lines
+        let randomY = 0  // random between sertain screen_lines
+
+        let newLocation = {x: randomX, y: randomY}
+        locations.push(newLocation)
+      }
+    }
+    
     
   }
   // render

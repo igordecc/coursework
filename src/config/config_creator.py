@@ -34,7 +34,7 @@ def create_config(lambd=0.7,
         "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, reconnectionProbability),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
         "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),
-        "barbell".lower(): lambda: networkx.barbell_graph(oscillators_number, 3)
+        "barbell".lower(): lambda: networkx.barbell_graph(oscillators_number, 2)
     }
     config['topology'] = topologydict[topology.lower()]()
     config['Aij'] = networkx.to_numpy_array(config['topology'])
@@ -60,7 +60,7 @@ def create_config(lambd=0.7,
     return config
 
 if __name__=="__main__":
-    oscillators_number = 50
+    oscillators_number = 10
     community_number_to_detect = 3
     config = create_config(oscillators_number=oscillators_number, topology="barbell", community_number_to_detect=community_number_to_detect)
     communities_generator = community.girvan_newman(config['topology'])
