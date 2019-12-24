@@ -63,26 +63,28 @@ def compute_system_ocl(osc_min=5, osc_max=6, osc_step=10):
         pendulum_phase_output_array = np.transpose(np.array(pendulum_phase_output_array))
         return pendulum_phase_output_array
 
-def compute_system_ocl_for_server(osc_min=5, osc_max=6, osc_step=10):
+def compute_system_ocl_for_server(oscillators_number=55, community_number_to_detect = 4):
+    config = create_config(oscillators_number=oscillators_number, topology="barbell", community_number_to_detect=community_number_to_detect, filename=None)
+    # fullyConnected +
+    # random +
+    # freeScaling -
+    # smallWorld + ok 55 or higher
+    # barbell +
+    phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
+    phase_vector[0] = config['phase_vector']
 
-    for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        config = create_config(oscillators_number=oscillators_number, filename=None)
-
-        phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
-        phase_vector[0] = config['phase_vector']
-
-        omega_vector = np.array(config['omega_vector'], dtype=np.float32)
-        Aij = np.array(config['Aij'], dtype=np.float32)
-        pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector,
-                                                                                                     config['lambd'],
-                                                                                                     Aij,
-                                                                                                     phase_vector,
-                                                                                                     a=config['t0'],
-                                                                                                     b=config['tf'],
-                                                                                                     oscillators_number=config['oscillators_number'],
-                                                                                                     N_parts=config['N'])
-        pendulum_phase_output_array = pendulum_phase_output_array
-        return pendulum_phase_output_array, config['Aij'], config['community_list']
+    omega_vector = np.array(config['omega_vector'], dtype=np.float32)
+    Aij = np.array(config['Aij'], dtype=np.float32)
+    pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector,
+                                                                                                 config['lambd'],
+                                                                                                 Aij,
+                                                                                                 phase_vector,
+                                                                                                 a=config['t0'],
+                                                                                                 b=config['tf'],
+                                                                                                 oscillators_number=config['oscillators_number'],
+                                                                                                 N_parts=config['N'])
+    pendulum_phase_output_array = pendulum_phase_output_array
+    return pendulum_phase_output_array, config['Aij'], config['community_list']
 
 def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10):
     r_out = []
