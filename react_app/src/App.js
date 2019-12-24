@@ -201,13 +201,9 @@ function App() {
 
       let _previous_line = 0
       let community_list = data.community_list
-      console.log(screen_lines)
       for (let _line in community_list) {    
-        
-        console.log(_previous_line)
         let _line_coordinate = screen_lines[_line]
         let _difference = _line_coordinate - _previous_line
-        console.log(_line_coordinate)
           for (let _oscillator in community_list[_line]) {
             
             let randomX = _previous_line + (rand_normal()*(_difference))  // random between sertain screen_lines
