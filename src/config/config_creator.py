@@ -4,6 +4,7 @@ import networkx
 from matplotlib import pyplot
 import networkx.algorithms.community as community
 
+
 def create_config(lambd=0.7,
                   oscillators_number=10,
                   filename='kuramoto_config.ini',
@@ -72,5 +73,14 @@ if __name__=="__main__":
     print(config['community_list'])
     print(len(config['community_list']))
     networkx.draw(config['topology'])
-
     pyplot.show()
+
+    def create_multiple_graph(graph_list, connection_segment):
+        # graph-connection-graph-connection-..
+        # connection_segment - graph
+
+        for G in graph_list:
+            if G.is_directed():
+                raise networkx.exception.NetworkXError("Directed Graph not supported")
+
+        return

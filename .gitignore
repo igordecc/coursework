@@ -1,6 +1,7 @@
 *.txt
 *.png
 *.doc
+*.ini
 .cache
 .idea/
 __pycache__
