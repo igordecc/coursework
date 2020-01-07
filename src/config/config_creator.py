@@ -9,9 +9,10 @@ def create_config(lambd=0.7,
                   oscillators_number=10,
                   filename='kuramoto_config.ini',
                   topology="fullyConnected",
-                  reconnectionProbability = 1,
+                  reconnectionProbability = 0.15,
                   neighbours = 10,
-                  community_number_to_detect = 4
+                  community_number_to_detect = 4,
+                  connection_prob = 0.3
                   ):
     """
     create config of the graph
@@ -35,8 +36,8 @@ def create_config(lambd=0.7,
 
 
     topologydict = {
-        "fullyConnected".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, p=1),
-        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, reconnectionProbability),
+        "fullyConnected".lower(): lambda: networkx.complete_graph(oscillators_number),
+        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, connection_prob),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
         "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),
         "barbell".lower(): lambda: networkx.barbell_graph(m1, m2)
