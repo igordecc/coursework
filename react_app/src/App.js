@@ -1,10 +1,11 @@
+/*
+Application module. Compile results of all other scripts and prepairs files for render.
+*/ 
+
 import React from 'react';
+import {draw_circle, draw_v_line} from  './drawLib';
+import {usePersistentData, usePersistentState, usePersistentCanvas} from  './hooksLib';
 var _ = require('underscore');
-// canvas simple example
-// created from w3c canvas tutorial and https://itnext.io/using-react-hooks-with-canvas-f188d6e416c0
-// create simple canvas using useRef React hook
-
-
 const DataURL = `http://localhost:5000/`
 const SCALE = 0.3
 const OFFSET = 80
@@ -14,41 +15,8 @@ var oscillators_number = 0
 var group_number = 0
 var screen_lines = []
 
-// canvas draw functions
-function draw_circle(ctx, location, color) {
-  ctx.save();
-  ctx.fillStyle = 'rgb(255, 51, 204)'
-  ctx.shadowColor = 'dodgeblue'
-  ctx.shadowBlue = 20   
-  ctx.scale(SCALE, SCALE)
-  ctx.translate(location.x / SCALE - OFFSET, location.y / SCALE - OFFSET)
-  ctx.beginPath();
-  ctx.fillStyle = color;
-  //console.log(location,color)
-  ctx.arc(100, 75, 50, 0, 2 * Math.PI);
-  //ctx.fillStyle = 'rgb(255, 51, 204)';
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-}
 
-function draw_line(ctx, xlocation) {
-  //location = x
-
-  ctx.lineWidth = '5';
-  ctx.strokeStyle = 'rgb(117, 26, 255)'
-  ctx.save()
-  
-  ctx.restore()
-  ctx.beginPath();
-  ctx.moveTo(xlocation, 0);
-  ctx.lineTo(xlocation, window.innerHeight)
-  ctx.stroke();
-  
-  ctx.restore()
-}
-
-// data cashing hook
+/* // data cashing hook
 function usePersistentState(init, itemName='') {
   const [value, setValue] = React.useState(
     JSON.parse(localStorage.getItem(itemName)) || init
@@ -105,7 +73,7 @@ function usePersistentCanvas(data) {
 
     function draw_all(zipped, screen_lines){
       zipped.forEach((l_and_c) => draw_circle(ctx, l_and_c[0], l_and_c[1]))
-      screen_lines.forEach(line => draw_line(ctx, line))
+      screen_lines.forEach(line => draw_v_line(ctx, line))
     }
     
     draw_all(zipped, screen_lines)
@@ -116,14 +84,14 @@ function usePersistentCanvas(data) {
   
   
   return [locations, setLocations, canvasRef, colorList, setColorList]
-}
+} */
 
 // set data hook
-function usePersistentData(init){
+/* function usePersistentData(init){
   const [data, setData] = usePersistentState(init, 'osc-data')
   
   return [data, setData]
-}
+} */
 
 // -------------------------------
 
