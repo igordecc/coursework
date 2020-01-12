@@ -4,6 +4,7 @@ Application module. Compile results of all other scripts and prepairs files for 
 
 import React from 'react';
 import {usePersistentData, usePersistentCanvas} from  './hooksLib';
+import {reload, Start} from './components/buttons';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
 
@@ -162,6 +163,8 @@ function App() {
         <button onClick={handleReloadOscillatorsData}>Reload</button>
         <button onClick={handlerStartEvaluation}>Start</button>
         <button onClick={handlerStopEvaluation}>Stop</button>
+        {reload()}
+        <Start/>
       </div>
       <canvas 
         ref={canvasRef}
