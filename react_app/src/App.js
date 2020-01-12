@@ -35,7 +35,7 @@ function App() {
   }
 
 
-  function handleReloadOscillatorsData (){  
+  function handleReload (){  
     // reload everything - all app
 
     function fetch_data() {
@@ -160,12 +160,12 @@ function App() {
       <div className="controls">
         <button onClick={handleClear}>Clear</button>
         <button onClick={handleUndo}>Undo</button>
-        <button onClick={handleReloadOscillatorsData}>Reload</button>
+        <button onClick={handleReload}>Reload</button>
         <button onClick={handlerStartEvaluation}>Start</button>
         <button onClick={handlerStopEvaluation}>Stop</button>
         <Clear/>
         <Undo/>
-        <Reload/>
+        <Reload onClick={handleReload}/>
         <Start/>
         <Stop/>
       </div>
