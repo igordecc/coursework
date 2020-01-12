@@ -1,7 +1,7 @@
 import React from 'react';
 const _ = require('underscore');
 
-export default function reload(){
+export default function Reload(){
 
     /* function handleReloadOscillatorsData (){  
         // reload everything - all app
@@ -80,5 +80,5 @@ export default function reload(){
       } */
 
     // return <button onClick={handleReloadOscillatorsData}>Reload</button>
-    return <button>Reload I M HERE</button>
+    return <button>Reload</button>
 };
