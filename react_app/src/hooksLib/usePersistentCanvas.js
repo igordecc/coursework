@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import usePersistentState from './usePersistentState';
 import draw_v_line from '../drawLib/drawVLine'
 import draw_circle from '../drawLib/drawCircle'
@@ -6,6 +6,7 @@ import draw_circle from '../drawLib/drawCircle'
 function usePersistentCanvas(data) {
     const [locations, setLocations] = usePersistentState([], 'draw-app')
     const canvasRef = React.useRef(null)
+    const [screen_lines, setScreenLines] = useState([]);
     //var [colorList, setColorList] = usePersistentState([],'color-list')
   
       // create default color list
@@ -39,7 +40,6 @@ function usePersistentCanvas(data) {
   
     // update canvas
     React.useEffect(() => {
-      var screen_lines = []
 
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
@@ -58,7 +58,7 @@ function usePersistentCanvas(data) {
     })
     
     
-    return [locations, setLocations, canvasRef, colorList, setColorList]
+    return [locations, setLocations, canvasRef, colorList, setColorList, screen_lines, setScreenLines]
   }
 
   export default usePersistentCanvas;

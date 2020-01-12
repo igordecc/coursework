@@ -3,103 +3,20 @@ Application module. Compile results of all other scripts and prepairs files for 
 */ 
 
 import React from 'react';
-import {draw_circle, draw_v_line} from  './drawLib';
-import {usePersistentData, usePersistentState, usePersistentCanvas} from  './hooksLib';
+import {usePersistentData, usePersistentCanvas} from  './hooksLib';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
-const SCALE = 0.3
-const OFFSET = 80
 
 
 var oscillators_number = 0
 var group_number = 0
-var screen_lines = []
 
-
-/* // data cashing hook
-function usePersistentState(init, itemName='') {
-  const [value, setValue] = React.useState(
-    JSON.parse(localStorage.getItem(itemName)) || init
-  )
-  React.useEffect(() => {
-    localStorage.setItem(itemName, JSON.stringify(value))
-  })
-  return [value, setValue]
-}
-
-// ----------hooks-----------
-// hook is a data managing function
-function usePersistentCanvas(data) {
-  const [locations, setLocations] = usePersistentState([], 'draw-app')
-  const canvasRef = React.useRef(null)
-  //var [colorList, setColorList] = usePersistentState([],'color-list')
-
-    // create default color list
-    function create_default_color_list(){
-      let colour_list = []
-      for (let location in locations) {
-        let new_colour = data.phase_vector[0][location]*50
-        colour_list.push(`hsl(${new_colour}}, 100%, 50%)`) //max 360
-      }  
-      return colour_list
-    }
-
-    // zip
-    function zip_locations_and_color_list(colour_list){
-      let zipped = []
-      for (let i=0; i<locations.length; i++) {
-        //console.log([locations[i], colour_list[0][i]])
-        zipped.push([locations[i], colour_list[i]])
-      }
-      return zipped
-    }
-
-    
-    
-    let colour_list = create_default_color_list()
-    var [colorList, setColorList] = usePersistentState(colour_list,'color-list')
-    let zipped = zip_locations_and_color_list(colorList)
-
-
-
-
-  // update canvas
-  React.useEffect(() => {
-    
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
-    
-
-    function draw_all(zipped, screen_lines){
-      zipped.forEach((l_and_c) => draw_circle(ctx, l_and_c[0], l_and_c[1]))
-      screen_lines.forEach(line => draw_v_line(ctx, line))
-    }
-    
-    draw_all(zipped, screen_lines)
-
-    // dont use setColorList(colour_list)
-    // set up color other way or reed how to work useEffect
-  })
-  
-  
-  return [locations, setLocations, canvasRef, colorList, setColorList]
-} */
-
-// set data hook
-/* function usePersistentData(init){
-  const [data, setData] = usePersistentState(init, 'osc-data')
-  
-  return [data, setData]
-} */
-
-// -------------------------------
 
 // Application render function
 function App() {
   // states
   const [data, setData] = usePersistentData({});
-  const [locations, setLocations, canvasRef, colorList, setColorList] = usePersistentCanvas(data);
+  const [locations, setLocations, canvasRef, colorList, setColorList, screen_lines, setScreenLines] = usePersistentCanvas(data);
   
 
   // handlers
@@ -141,15 +58,15 @@ function App() {
     
     function divide_screen(){
       // dividing screen acording to group size
-      // var screen_lines = []  // at the constants
       let vertical_line = 0
-      screen_lines = []
+      var _screen_lines = []
       for (let i=0; i < group_number; i++) {
         let community_size = _.size(data.community_list[i])
         vertical_line += window.innerWidth * (community_size / oscillators_number) 
-        screen_lines.push( vertical_line )
+        _screen_lines.push( vertical_line )
       }
-      //console.log("screen lines:", screen_lines)
+      return _screen_lines;
+      
     }
 
 
@@ -188,7 +105,7 @@ function App() {
 
     fetch_data()
     define_data_params()
-    divide_screen()
+    setScreenLines(divide_screen()) 
     setLocations(calculate_osc_locations())
     //console.log(locations)
   }
