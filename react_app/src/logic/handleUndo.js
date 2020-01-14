@@ -1,3 +1,3 @@
-export default function handleUndo(e){
-    e.setLocations(e.locations.slice(0, -1))
+export default function handleUndo(props){
+    props.setLocations(props.locations.slice(0, -1))
 }

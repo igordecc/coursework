@@ -5,7 +5,6 @@ import draw_circle from '../drawLib/drawCircle'
 
 function usePersistentCanvas(data) {
     const [locations, setLocations] = usePersistentState([], 'draw-app')
-    const canvasRef = React.useRef(null)
     const [screen_lines, setScreenLines] = useState([]);
     //var [colorList, setColorList] = usePersistentState([],'color-list')
   
@@ -36,29 +35,9 @@ function usePersistentCanvas(data) {
       let zipped = zip_locations_and_color_list(colorList)
   
   
-  
-  
-    // update canvas
-    React.useEffect(() => {
 
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
-      
-  
-      function draw_all(zipped, screen_lines){
-        zipped.forEach((l_and_c) => draw_circle(ctx, l_and_c[0], l_and_c[1]))
-        screen_lines.forEach(line => draw_v_line(ctx, line))
-      }
-      
-      draw_all(zipped, screen_lines)
-  
-      // dont use setColorList(colour_list)
-      // set up color other way or reed how to work useEffect
-    })
-    
-    
-    return [locations, setLocations, canvasRef, colorList, setColorList, screen_lines, setScreenLines]
+        
+    return [locations, setLocations, zipped, colorList, setColorList, screen_lines, setScreenLines]
   }
 
   export default usePersistentCanvas;

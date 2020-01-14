@@ -17,7 +17,7 @@ export default function handleReload(props){
         props.setData(e);
       }).
       catch(error => console.log(error))
-      //console.log(data)
+      //console.log("props data: ",props.data)
     }
     
     function define_data_params(){
@@ -31,13 +31,13 @@ export default function handleReload(props){
     function divide_screen(){
       // dividing screen acording to group size
       let vertical_line = 0
-      var _screen_lines = []
+      var _screenLines = []
       for (let i=0; i < group_number; i++) {
         let community_size = _.size(props.data.community_list[i])
         vertical_line += window.innerWidth * (community_size / oscillators_number) 
-        _screen_lines.push( vertical_line )
+        _screenLines.push( vertical_line )
       }
-      return _screen_lines;
+      return _screenLines;
       
     }
 
@@ -59,12 +59,12 @@ export default function handleReload(props){
       let _previous_line = 0
       let community_list = props.data.community_list
       for (let _line in community_list) {    
-        let _line_coordinate = props.screen_lines[_line]
+        let _line_coordinate = props.screenLines[_line]
         let _difference = _line_coordinate - _previous_line
           for (let _oscillator in community_list[_line]) {
             
-            let randomX = _previous_line + (rand_normal()*(_difference))  // random between sertain screen_lines
-            let randomY = (rand_normal()*window.innerHeight)  // random between sertain screen_lines
+            let randomX = _previous_line + (rand_normal()*(_difference))  // random between sertain screenLines
+            let randomY = (rand_normal()*window.innerHeight)  // random between sertain screenLines
             
             let newLocation = {x: randomX, y: randomY}
             _locations.push(newLocation)

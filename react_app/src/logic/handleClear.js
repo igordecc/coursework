@@ -1,3 +1,3 @@
-export default function handleClear(e){
-    e.setLocations([])
+export default function handleClear(props){
+    props.setLocations([])
 }

@@ -1,4 +1,4 @@
 export default function handleCanvasClick(e){
     const newLocation = {x: e.clientX, y: e.clientY}
-    e.setLocations([...e.locations, newLocation])
+    e.props.setLocations([...e.props.locations, newLocation])
 }
