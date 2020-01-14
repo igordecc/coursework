@@ -3,8 +3,9 @@ Application module. Compile results of all other scripts and prepairs files for 
 */ 
 
 import React from 'react';
-import {usePersistentData, usePersistentCanvas} from  './hooksLib';
+import {usePersistentData, usePersistentCanvas, useAllData} from  './hooksLib';
 import {Clear, Undo, Reload, Start, Stop} from './components/buttons';
+import {handleCanvasClick} from './logic';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
 
@@ -18,13 +19,12 @@ function App() {
   // states
   const [data, setData] = usePersistentData({});
   const [locations, setLocations, canvasRef, colorList, setColorList, screen_lines, setScreenLines] = usePersistentCanvas(data);
+  const props = useAllData();
+  console.log('locations')
+  
   
 
   // handlers
-  function handleCanvasClick (e) {
-    const newLocation = {x: e.clientX, y: e.clientY}
-    setLocations([...locations, newLocation])
-  }
 
   function handleClear() {
     setLocations([])
@@ -173,7 +173,11 @@ function App() {
         ref={canvasRef}
         width={window.innerWidth}
         height={window.innerHeight}
-        onClick={handleCanvasClick} 
+        onClick={e=>{
+          e.locations=locations
+          e.setLocations=setLocations
+          handleCanvasClick(e)
+        }} 
       />
     </>
   );

@@ -1,6 +1,12 @@
 import React from 'react';
 
-export default function handleReload (){  
+var _ = require('underscore');
+const DataURL = `http://localhost:5000/`
+
+var oscillators_number = 0
+var group_number = 0
+
+export default function handleReload(props){  
     // reload everything - all app
 
     function fetch_data() {
@@ -8,7 +14,7 @@ export default function handleReload (){
       fetch(DataURL).           
       then(result => result.json()).
       then(e => {
-        setData(e);
+        props.setData(e);
       }).
       catch(error => console.log(error))
       //console.log(data)
@@ -16,8 +22,8 @@ export default function handleReload (){
     
     function define_data_params(){
         // main parameters
-      oscillators_number = _.size(data.Aij[0])
-      group_number = _.size(data.community_list)
+      oscillators_number = _.size(props.data.Aij[0])
+      group_number = _.size(props.data.community_list)
       //console.log(oscillators_number, group_number)
     }
 
@@ -27,7 +33,7 @@ export default function handleReload (){
       let vertical_line = 0
       var _screen_lines = []
       for (let i=0; i < group_number; i++) {
-        let community_size = _.size(data.community_list[i])
+        let community_size = _.size(props.data.community_list[i])
         vertical_line += window.innerWidth * (community_size / oscillators_number) 
         _screen_lines.push( vertical_line )
       }
@@ -51,9 +57,9 @@ export default function handleReload (){
       }
 
       let _previous_line = 0
-      let community_list = data.community_list
+      let community_list = props.data.community_list
       for (let _line in community_list) {    
-        let _line_coordinate = screen_lines[_line]
+        let _line_coordinate = props.screen_lines[_line]
         let _difference = _line_coordinate - _previous_line
           for (let _oscillator in community_list[_line]) {
             
@@ -71,7 +77,7 @@ export default function handleReload (){
 
     fetch_data()
     define_data_params()
-    setScreenLines(divide_screen()) 
-    setLocations(calculate_osc_locations())
+    props.setScreenLines(divide_screen()) 
+    props.setLocations(calculate_osc_locations())
     //console.log(locations)
-  }
+  } 
