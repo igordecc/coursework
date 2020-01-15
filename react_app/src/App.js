@@ -6,7 +6,7 @@ import React from 'react';
 import {usePersistentData, usePersistentCanvas, useAllData} from  './hooksLib';
 import {Clear, Undo, Reload, Start, Stop} from './components/buttons';
 import {draw_circle, draw_v_line} from './drawLib'
-import {handleCanvasClick, handleClear, handleUndo, handleReload} from './logic';
+import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart, handleStop} from './logic';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
 
@@ -44,9 +44,6 @@ function App() {
 
 
   // handlers
-
-  
-
   function handlerStartEvaluation(){
     let timeout = 100 
 
@@ -97,8 +94,8 @@ function App() {
         <button onClick={e=>{handleClear(props)}}>Clear</button>
         <button onClick={e=>{handleUndo(props)}}>Undo</button>
         <button onClick={e=>{handleReload(props)}}>Reload</button>
-        <button onClick={handlerStartEvaluation}>Start</button>
-        <button onClick={handlerStopEvaluation}>Stop</button>
+        <button onClick={e=>{handleStart(props)}}>Start</button>
+        <button onClick={e=>{handleStop(props)}}>Stop</button>
         <Clear/>
         <Undo/>
         <Reload onClick={e=>{handleReload(props)}}/>
