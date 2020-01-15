@@ -43,64 +43,18 @@ function App() {
   })
 
 
-  // handlers
-  function handlerStartEvaluation(){
-    let timeout = 100 
-
-    const sleep = (milliseconds) => {
-      return new Promise(resolve => setTimeout(resolve, milliseconds))
-    }
-    
-
-    const doWithDelay = async (delay) => {
-      await sleep(delay||1000)
-      //do stuff
-    }
-    
-    
-    async function evaluate(delay) {
-      for (let vector in props.data.phase_vector) {
-        
-        // sleep on each iteration
-        let color_list = []
-        await sleep(delay||1000).then(() => {
-          for (let location in props.locations) {  // change colors of dots
-            let color = props.data.phase_vector[vector][location]*100
-            let hsl_color = `hsl(${color},100%,50%)`
-            color_list.push(hsl_color)
-          }
-        })
-        
-
-        props.setColorList(color_list)
-        //console.log(color_list )
-        //console.log(colorList)
-      }
-    }
-    evaluate(timeout)
-  }
-
-  function handlerStopEvaluation(){
-
-  }
-
-  function handlerChangeEvaluationSpeed(){
+    function handlerChangeEvaluationSpeed(){
 
   }
   // render
   return (
     <> 
-      <div className="controls">
-        <button onClick={e=>{handleClear(props)}}>Clear</button>
-        <button onClick={e=>{handleUndo(props)}}>Undo</button>
-        <button onClick={e=>{handleReload(props)}}>Reload</button>
-        <button onClick={e=>{handleStart(props)}}>Start</button>
-        <button onClick={e=>{handleStop(props)}}>Stop</button>
-        <Clear/>
-        <Undo/>
+      <div className="controls">  
+        <Clear onClick={e=>{handleClear(props)}}/>
+        <Undo onClick={e=>{handleUndo(props)}}/>
         <Reload onClick={e=>{handleReload(props)}}/>
-        <Start/>
-        <Stop/>
+        <Start onClick={e=>{handleStart(props)}}/>
+        <Stop onClick={e=>{handleStop(props)}}/>
       </div>
       <canvas 
         ref={canvasRef}

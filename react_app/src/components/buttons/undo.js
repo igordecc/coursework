@@ -1,5 +1,5 @@
 import React from 'react';
 
-export default function Undo(){
-    return <button>Undo</button>
+export default function Undo(props){
+    return <button onClick={props.onClick}>Undo</button>
 }
