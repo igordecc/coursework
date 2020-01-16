@@ -42,6 +42,9 @@ function App() {
     // set up color other way or reed how to work useEffect
   })
 
+  // TODO: line
+  // TODO: update lines with useEffect
+
 
     function handlerChangeEvaluationSpeed(){
 
