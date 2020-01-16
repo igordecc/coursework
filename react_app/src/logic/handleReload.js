@@ -84,12 +84,9 @@ export default function handleReload(props){
         x = (xy_list[i][0]+1.2) * window.innerWidth/2.5    
         y = (xy_list[i][1]+1.2) * window.innerHeight/2.5  
         coordinates.push({'x':x, 'y':y})
-      }
-      
-      
+      }  
       return coordinates
     }
-
 
 
     fetch_data()
