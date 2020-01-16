@@ -70,18 +70,11 @@ if __name__=="__main__":
     community_number_to_detect = 3
     config = create_config(oscillators_number=oscillators_number, topology="barbell", community_number_to_detect=community_number_to_detect)
     communities_generator = community.girvan_newman(config['topology'])
-    print(config['phase_vector'])
-    print(config['community_list'])
-    print(len(config['community_list']))
-    networkx.draw(config['topology'])
+    the_graph = config['topology']
+    pos = networkx.drawing.fruchterman_reingold_layout(config['topology'])
+    print([list(edge) for edge in networkx.edges(the_graph)])
+    networkx.draw_networkx(config['topology'], pos)
     pyplot.show()
 
-    def create_multiple_graph(graph_list, connection_segment):
-        # graph-connection-graph-connection-..
-        # connection_segment - graph
 
-        for G in graph_list:
-            if G.is_directed():
-                raise networkx.exception.NetworkXError("Directed Graph not supported")
 
-        return

@@ -17,7 +17,7 @@ export default function handleReload(props){
         props.setData(e);
       }).
       catch(error => console.log(error))
-      //console.log("props data: ",props.data)
+      console.log("props data: ",props.data)
     }
     
     function define_data_params(){
@@ -41,8 +41,8 @@ export default function handleReload(props){
       
     }
 
-
-    function calculate_osc_locations() {
+    /* Define node's coordinates */
+    /* function COL_selfmade() {
       // return locations
       let _locations = []
       function rand_normal() {
@@ -72,7 +72,24 @@ export default function handleReload(props){
         _previous_line += _difference
         }  
       return _locations
+    } */
+
+    function calculate_osc_locations() {
+      // rescale data coordinates from absolute to screen size
+      let xy_list = props.data.nodes_coordinates
+      let coordinates = []
+      let x = 0
+      let y = 0
+      for (let i=0; i< xy_list.length; i++) {
+        x = (xy_list[i][0]+1.2) * window.innerWidth/2.5    
+        y = (xy_list[i][1]+1.2) * window.innerHeight/2.5  
+        coordinates.push({'x':x, 'y':y})
+      }
+      
+      
+      return coordinates
     }
+
 
 
     fetch_data()
