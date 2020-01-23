@@ -30,7 +30,7 @@ function usePersistentCanvas(data) {
   
       
       
-      let colour_list = create_default_color_list()
+      let colour_list = []//create_default_color_list()
       var [colorList, setColorList] = usePersistentState(colour_list,'color-list')
       let zipped = zip_locations_and_color_list(colorList)
   

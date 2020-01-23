@@ -16,8 +16,8 @@ export default function handleReload(props){
       then(e => {
         props.setData(e);
       }).
-      catch(error => console.log(error))
-      console.log("props data: ",props.data)
+      catch(error => console.log('ERROR: ', error))
+      //console.log("props data: ",props.data)
     }
     
     function define_data_params(){

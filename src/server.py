@@ -14,7 +14,6 @@ def return_json_data():
     phase_vector = [[float(j) for j in i] for i in phase_vector]
     nodes_coordinates = [list(node) for node in networkx.drawing.fruchterman_reingold_layout(the_graph).values()]
     node_edges = [list(edge) for edge in networkx.edges(the_graph)]
-
     # forming response
     response = flask.jsonify({"Aij": Aij.tolist(),
                               "phase_vector": phase_vector,
@@ -22,6 +21,7 @@ def return_json_data():
                               "nodes_coordinates":nodes_coordinates,
                               "node_edges":node_edges
                               })
+
     response.headers.add('Access-Control-Allow-Origin', "*")    # security unimportant thing
     return response
 
