@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function DefaultButton(props){
     console.log(props.value)
-    console.log(props.buttonText)
+    console.log(props.buttonLable)
     
-    return <button onClick={props.onClick}>{props.buttonText}</button>
+    return <button onClick={props.onClick}>{props.buttonLable}</button>
   };

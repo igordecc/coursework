@@ -65,12 +65,12 @@ function App() {
   return (
     <> 
       <div className="controls">  
-        
-        <Undo onClick={e=>{handleUndo(props)}}/>
-        <Reload onClick={e=>{handleReload(props)}}/>
-        <Start onClick={e=>{handleStart(props)}}/>
-        <Stop onClick={e=>{handleStop(props)}}/>
-        <StartWS onClick={e=>{handleEvaluationWS(props)}}/>
+        <DefaultButton onClick={e=>{handleClear(props)}} buttonLable='Clear'/>
+        <DefaultButton onClick={e=>{handleUndo(props)}} buttonLable='Undo'/>
+        <DefaultButton onClick={e=>{handleReload(props)}} buttonLable='Reload'/>
+        <DefaultButton onClick={e=>{handleStart(props)}} buttonLable='Start'/>
+        <DefaultButton onClick={e=>{handleStop(props)}} buttonLable='Stop'/>
+        <DefaultButton onClick={e=>{handleEvaluationWS(props)}} buttonLable='StartWS'/>
       </div>
       <canvas 
         ref={canvasRef}
