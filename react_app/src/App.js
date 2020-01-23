@@ -4,9 +4,9 @@ Application module. Compile results of all other scripts and prepairs files for 
 
 import React from 'react';
 import {usePersistentData, usePersistentCanvas, useAllData} from  './hooksLib';
-import {Clear, Undo, Reload, Start, Stop} from './components/buttons';
+import {Clear, Undo, Reload, Start, Stop, StartWS} from './components/buttons';
 import {draw_circle, draw_v_line, draw_edge} from './drawLib'
-import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart, handleStop} from './logic';
+import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart, handleStop, handleEvaluationWS} from './logic';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
 
@@ -62,6 +62,7 @@ function App() {
         <Reload onClick={e=>{handleReload(props)}}/>
         <Start onClick={e=>{handleStart(props)}}/>
         <Stop onClick={e=>{handleStop(props)}}/>
+        <StartWS onClick={e=>{handleEvaluationWS(props)}}/>
       </div>
       <canvas 
         ref={canvasRef}

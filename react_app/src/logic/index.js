@@ -4,3 +4,4 @@ export {default as handleClear} from './handleClear';
 export {default as handleUndo} from './handleUndo';
 export {default as handleStart} from './handleStart';
 export {default as handleStop} from './handleStop';
+export {default as handleEvaluationWS} from './handleEvaluationWS';

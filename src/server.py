@@ -25,5 +25,12 @@ def return_json_data():
     response.headers.add('Access-Control-Allow-Origin', "*")    # security unimportant thing
     return response
 
+@app.route('/dynamic')
+def return_dynamic_data():
+    # return certain data to certain user
+    # can it work?
+    ...
+
+
 if __name__== '__main__':
     app.run()
