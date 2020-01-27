@@ -6,7 +6,7 @@ import React from 'react';
 import {usePersistentData, usePersistentCanvas, useAllData} from  './hooksLib';
 import {DefaultButton, Undo, Reload, Start, Stop, StartWS} from './components/buttons';
 import {draw_circle, draw_v_line, draw_edge} from './drawLib'
-import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart, handleStop, handleEvaluationWS} from './logic';
+import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart, handleStop, handleEvaluationWS, fetchWS} from './logic';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
 
@@ -17,6 +17,7 @@ var group_number = 0
 
 // Application render function
 function App() {
+  fetchWS()
   
   // states
   const props = useAllData();
