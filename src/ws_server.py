@@ -2,6 +2,7 @@ import websockets
 import asyncio
 import shell
 import networkx
+import json
 
 
 async def serve_websocket(websocket, path):
@@ -20,22 +21,28 @@ async def serve_websocket(websocket, path):
         nodes_coordinates = [list(node) for node in networkx.drawing.fruchterman_reingold_layout(the_graph).values()]
         node_edges = [list(edge) for edge in networkx.edges(the_graph)]
         metadata = {
-            "community_list" : community_list
+            "type" : "metadata",
+            "metadata" :{
+                "community_list": community_list
+            }
         }
-        await websocket.send(str(metadata))
+        await websocket.send(json.dumps(metadata))
+
         for iteration in phase_vector:
             msg = {
+                "type": "iteration",
                 "phase_vector": iteration,
                 "nodes_coordinates": nodes_coordinates,
                 "node_edges": node_edges
             }
-            await websocket.send(str(msg))
+            await websocket.send(json.dumps(msg))
     print("ok")
 
 
 start_server = websockets.serve(serve_websocket, "localhost", 1234)
-
 asyncio.get_event_loop().run_until_complete(start_server)
+print("started server")
 asyncio.get_event_loop().run_forever()
+print("closed server")
 
 
