@@ -15,7 +15,7 @@ def return_json_data():
     nodes_coordinates = [list(node) for node in networkx.drawing.fruchterman_reingold_layout(the_graph).values()]
     node_edges = [list(edge) for edge in networkx.edges(the_graph)]
     # forming response
-    response = flask.jsonify({"Aij": Aij.tolist(),
+    response = flask.jsonify({
                               "phase_vector": phase_vector,
                               "community_list": community_list,
                               "nodes_coordinates":nodes_coordinates,

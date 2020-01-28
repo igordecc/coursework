@@ -22,7 +22,7 @@ export default function handleReload(props){
     
     function define_data_params(){
         // main parameters
-      oscillators_number = _.size(props.data.Aij[0])
+      oscillators_number = _.size(props.data.phase_vector[0])
       group_number = _.size(props.data.community_list)
       //console.log(oscillators_number, group_number)
     }
