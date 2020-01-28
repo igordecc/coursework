@@ -41,38 +41,7 @@ export default function handleReload(props){
       
     }
 
-    /* Define node's coordinates */
-    /* function COL_selfmade() {
-      // return locations
-      let _locations = []
-      function rand_normal() {
-        // random normal distribution [0 ; 1]
-        var u = 0, v = 0;
-        while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-        while(v === 0) v = Math.random();
-        let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
-        num = num / 10.0 + 0.5; // Translate to 0 -> 1
-        if (num > 1 || num < 0) return rand_normal(); // resample between 0 and 1
-        return num;
-      }
 
-      let _previous_line = 0
-      let community_list = props.data.community_list
-      for (let _line in community_list) {    
-        let _line_coordinate = props.screenLines[_line]
-        let _difference = _line_coordinate - _previous_line
-          for (let _oscillator in community_list[_line]) {
-            
-            let randomX = _previous_line + (rand_normal()*(_difference))  // random between sertain screenLines
-            let randomY = (rand_normal()*window.innerHeight)  // random between sertain screenLines
-            
-            let newLocation = {x: randomX, y: randomY}
-            _locations.push(newLocation)
-          }
-        _previous_line += _difference
-        }  
-      return _locations
-    } */
 
     function calculate_osc_locations() {
       // rescale data coordinates from absolute to screen size

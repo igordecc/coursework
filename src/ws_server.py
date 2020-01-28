@@ -2,7 +2,7 @@ import websockets
 import asyncio
 import shell
 import networkx
-import flask
+
 
 async def serve_websocket(websocket, path):
     request = await websocket.recv()
@@ -19,6 +19,10 @@ async def serve_websocket(websocket, path):
         phase_vector = [[float(j) for j in i] for i in phase_vector]
         nodes_coordinates = [list(node) for node in networkx.drawing.fruchterman_reingold_layout(the_graph).values()]
         node_edges = [list(edge) for edge in networkx.edges(the_graph)]
+        metadata = {
+            "community_list" : community_list
+        }
+        await websocket.send(str(metadata))
         for iteration in phase_vector:
             msg = {
                 "phase_vector": iteration,
@@ -26,7 +30,7 @@ async def serve_websocket(websocket, path):
                 "node_edges": node_edges
             }
             await websocket.send(str(msg))
-            print("msg send")
+    print("ok")
 
 
 start_server = websockets.serve(serve_websocket, "localhost", 1234)
