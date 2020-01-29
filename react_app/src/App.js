@@ -17,7 +17,6 @@ var group_number = 0
 
 // Application render function
 function App() {
-  fetchWS()
   
   // states
   const props = useAllData();

@@ -23,19 +23,27 @@ async def serve_websocket(websocket, path):
         metadata = {
             "type" : "metadata",
             "metadata" :{
-                "community_list": community_list
+                "community_list": community_list,
+                "phase_vector": [phase_vector[0], ],
+                "nodes_coordinates": nodes_coordinates,
+                "node_edges": node_edges
             }
         }
         await websocket.send(json.dumps(metadata))
 
-        for iteration in phase_vector:
+        for i, iteration in enumerate(phase_vector):
             msg = {
                 "type": "iteration",
-                "phase_vector": iteration,
-                "nodes_coordinates": nodes_coordinates,
-                "node_edges": node_edges
+                "iteration_data":{
+                    "phase_vector": [iteration, ],
+                },
+                "dynamic_states":{
+                    "nodes_coordinates": nodes_coordinates,
+                    "node_edges": node_edges
+                }
             }
             await websocket.send(json.dumps(msg))
+
     print("ok")
 
 

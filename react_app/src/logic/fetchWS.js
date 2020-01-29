@@ -12,12 +12,23 @@ export default async function fetchWS(props){
                 for (let property in msg.metadata){
                     collectedData[property] = msg.metadata[property]
                 }
-                console.log("this is colection data",collectedData)
-                console.log("this is metadata,",event.data)
+                //console.log("metadata taken")
                 break;
+                
             case "iteration":
-                //console.log("this is iterations data",event.data);
+                // add new iteration data to already Collected
+                for (let property in msg.iteration_data){
+                    collectedData[property] = collectedData[property].concat(msg.iteration_data[property])
+                }
+                // update dynamic states, by overriding it
+                for (let property in msg.dynamic_states){
+                    collectedData[property] = msg.dynamic_states[property]
+                }
+                //console.log("iteration data taken");
                 break;
-            } 
-        }
+        } 
+        console.log(collectedData)
+        props.setData(collectedData)
     }
+    
+}

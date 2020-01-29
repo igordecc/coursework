@@ -1,4 +1,5 @@
 import React from 'react';
+import {fetchWS} from '../logic';
 
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
@@ -17,8 +18,9 @@ export default function handleReload(props){
         props.setData(e);
       }).
       catch(error => console.log('ERROR: ', error))
-      //console.log("props data: ",props.data)
+      console.log("props data: ",props.data)
     }
+    
     
     function define_data_params(){
         // main parameters
@@ -58,7 +60,9 @@ export default function handleReload(props){
     }
 
 
-    fetch_data()
+    //fetch_data()
+    fetchWS(props).
+    catch(error => console.log('ERROR: ', error))
     define_data_params()
     props.setScreenLines(divide_screen()) 
     props.setLocations(calculate_osc_locations())
