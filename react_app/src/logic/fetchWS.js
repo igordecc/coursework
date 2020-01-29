@@ -27,7 +27,6 @@ export default async function fetchWS(props){
                 //console.log("iteration data taken");
                 break;
         } 
-        console.log(collectedData)
         props.setData(collectedData)
     }
     

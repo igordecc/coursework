@@ -8,19 +8,7 @@ var oscillators_number = 0
 var group_number = 0
 
 export default function handleReload(props){  
-    // reload everything - all app
-
-    function fetch_data() {
-      // connection to server
-      fetch(DataURL).           
-      then(result => result.json()).
-      then(e => {
-        props.setData(e);
-      }).
-      catch(error => console.log('ERROR: ', error))
-      console.log("props data: ",props.data)
-    }
-    
+    // reload everything - all app  
     
     function define_data_params(){
         // main parameters
@@ -60,7 +48,6 @@ export default function handleReload(props){
     }
 
 
-    //fetch_data()
     fetchWS(props).
     catch(error => console.log('ERROR: ', error))
     define_data_params()
