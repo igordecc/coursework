@@ -4,9 +4,9 @@ Application module. Compile results of all other scripts and prepairs files for 
 
 import React from 'react';
 import {usePersistentData, usePersistentCanvas, useAllData} from  './hooksLib';
-import {DefaultButton, Undo, Reload, Start, Stop, StartWS} from './components/buttons';
+import {DefaultButton, DownloadGraphFile, UploadGraphFile} from './components';
 import {draw_circle, draw_v_line, draw_edge} from './drawLib'
-import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart, handleStop, handleEvaluationWS, fetchWS} from './logic';
+import {handleCanvasClick, handleClear, handleUndo, handleReload, handleStart} from './logic';
 var _ = require('underscore');
 const DataURL = `http://localhost:5000/`
 
@@ -69,8 +69,8 @@ function App() {
         <DefaultButton onClick={e=>{handleUndo(props)}} buttonLable='Undo'/>
         <DefaultButton onClick={e=>{handleReload(props)}} buttonLable='Reload'/>
         <DefaultButton onClick={e=>{handleStart(props)}} buttonLable='Start'/>
-        <DefaultButton onClick={e=>{handleStop(props)}} buttonLable='Stop'/>
-        <DefaultButton onClick={e=>{handleEvaluationWS(props)}} buttonLable='StartWS'/>
+        <DownloadGraphFile/>
+        <UploadGraphFile/>
       </div>
       <canvas 
         ref={canvasRef}
