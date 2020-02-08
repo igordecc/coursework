@@ -108,9 +108,9 @@ def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, osci
     return lambd_out, r_out
 
 
-def compute_graph_properties_for_system(oscillators_number=1000,
+def compute_graph_properties_for_system(oscillators_number=100,
                                         topology="smallWorld",
-                                        reconnectionProbability = 1,
+                                        reconnectionProbability = 0.01,
                                         neighbours=10
                                         ):
     config = create_config(oscillators_number=oscillators_number,

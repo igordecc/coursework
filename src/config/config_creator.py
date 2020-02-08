@@ -30,8 +30,8 @@ def create_config(lambd=0.7,
     config['lambd'] = lambd
     config['omega_vector'] = [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)]
 
-    # precalculations for barbell_graph
     m2 = 2 # must be even
+    # precalculations for barbell_graph
     m1 = oscillators_number// 2- m2//2
 
 
@@ -66,13 +66,12 @@ def create_config(lambd=0.7,
     return config
 
 if __name__=="__main__":
-    oscillators_number = 55
+    oscillators_number = 10
     community_number_to_detect = 3
-    config = create_config(oscillators_number=oscillators_number, topology="barbell", community_number_to_detect=community_number_to_detect)
-    communities_generator = community.girvan_newman(config['topology'])
-    the_graph = config['topology']
+    config = create_config(oscillators_number=oscillators_number, topology="smallWorld", neighbours=5, reconnectionProbability=0.1)
+
+
     pos = networkx.drawing.fruchterman_reingold_layout(config['topology'])
-    print([list(edge) for edge in networkx.edges(the_graph)])
     networkx.draw_networkx(config['topology'], pos)
     pyplot.show()
 

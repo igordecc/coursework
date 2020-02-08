@@ -28,6 +28,7 @@ class App(QDialog):
         self.initUI()
 
     def initUI(self):
+        print("INIT UI!")
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
@@ -38,8 +39,9 @@ class App(QDialog):
         self.setLayout(windowLayout)
 
         # m.move(0, 0)
-
+        print("INIT UI!")
         self.show()
+        print("INIT UI!")
 
     def createGridLayout(self):
         # Grid layout is pretty useful.
@@ -177,8 +179,11 @@ class PlotCanvas(FigureCanvas):
 def init_app():
     # one additional layer to compact __main__
     app = QApplication(sys.argv)
+    print('i m here')
     ex = App()
+    print('i m here')
     sys.exit(app.exec_())
+    print('i m here')
 
 
 if __name__ == '__main__':
