@@ -7,11 +7,11 @@ import networkx.algorithms.community as community
 
 def create_config(lambd=0.7,
                   oscillators_number=10,
-                  filename='kuramoto_config.ini',
+                  filename=None,
                   topology="fullyConnected",
                   reconnectionProbability = 0.15,
                   neighbours = 10,
-                  community_number_to_detect = 4,
+                  community_number_to_detect = None,
                   connection_prob = 0.3
                   ):
     """
@@ -51,10 +51,11 @@ def create_config(lambd=0.7,
     config['h'] = (config['tf']-config['t0'])/config['N']
 
     # community detection
-    communities_generator = community.girvan_newman(config['topology'])
-    for i in range(community_number_to_detect - 1):
-        next_level_communities = next(communities_generator)
-    config['community_list'] = sorted(map(sorted, next_level_communities))
+    if community_number_to_detect is not None:
+        communities_generator = community.girvan_newman(config['topology'])
+        for i in range(community_number_to_detect - 1):
+            next_level_communities = next(communities_generator)
+        config['community_list'] = sorted(map(sorted, next_level_communities))
 
     # write config in file
     if filename is not None:
