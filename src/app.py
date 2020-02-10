@@ -51,38 +51,69 @@ class App(QDialog):
         # !!!! DO NOT CHANGE setColumStretch without purpose. Or size proportions of plots and textboxes will broke!
         self.globalLayout.setColumnStretch(1, 4)
         self.figure = []
-        gRowIndex = 0
+        self.gRowIndex = 0
 
         self.oscGroupBox = QGroupBox("oscillators")
-        self.globalLayout.addWidget(self.oscGroupBox, gRowIndex, 0)
+        self.globalLayout.addWidget(self.oscGroupBox, self.gRowIndex, 0)
         model = shell.compute_system_ocl
         self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
-        self.globalLayout.addWidget(self.figure[gRowIndex], gRowIndex, 1)
+        self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
 
-        localLayout = LocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
+        localLayout = LocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
         self.oscGroupBox.setLayout(localLayout.localLayout)
 
-        gRowIndex += 1
+        self.gRowIndex += 1
         self.rFromLambdaGroupBox = QGroupBox("r from lambda")
-        self.globalLayout.addWidget(self.rFromLambdaGroupBox, gRowIndex, 0)
+        self.globalLayout.addWidget(self.rFromLambdaGroupBox, self.gRowIndex, 0)
         model = shell.compute_r_for_multiple_lambda_ocl
         self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
-        self.globalLayout.addWidget(self.figure[gRowIndex] , gRowIndex, 1)
+        self.globalLayout.addWidget(self.figure[self.gRowIndex] , self.gRowIndex, 1)
 
-        localLayout = LocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
+        localLayout = LocalLayout(("lmb_min", "lmb_max", "lmb_step", "oscillators_number"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
         self.rFromLambdaGroupBox.setLayout(localLayout.localLayout)
 
-        gRowIndex += 1
-        self.graphGroupBox = QGroupBox("graph properties")
-        self.globalLayout.addWidget(self.graphGroupBox, gRowIndex, 0)
-        model = shell.compute_graph_properties_for_system
-        self.figure.append(PlotCanvas(self, model=model, width=5, height=4, lables=("xlable","ylable")))
-        self.globalLayout.addWidget(self.figure[gRowIndex], gRowIndex, 1)
+        self.gRowIndex += 1
 
-        localLayout = LocalLayout(("oscillators_number", "topology", "reconnectionProbability", "neighbours"), "evaluate", num=gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
-        self.graphGroupBox.setLayout(localLayout.localLayout)
+        # self.graphGroupBox = QGroupBox("graph properties")
+        # self.globalLayout.addWidget(self.graphGroupBox, self.gRowIndex, 0)
+        #
+        self.figure.append(PlotCanvas(self, model=model, width=5, height=4, lables=("xlable","ylable")))
+        self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
+        localLayout = QGridLayout()
+        localLayout.addWidget(self.figure[self.gRowIndex])
+        self.globalLayout = self.createNestedGrid(self.globalLayout, self.gRowIndex, 1, localLayout)
+
+        model = shell.compute_graph_properties_for_system
+        localLayout = LocalLayout(("oscillators_number",
+                                   "topology",
+                                   "reconnectionProbability",
+                                   "neighbours"),
+                                  "evaluate",
+                                  num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__
+                                  )
+        # self.graphGroupBox.setLayout(localLayout.localLayout)
+        self.globalLayout = self.createNestedGrid(self.globalLayout, self.gRowIndex, 0, localLayout.localLayout, "graph properties NEW")
 
         self.horizontalGroupBox.setLayout(self.globalLayout)
+
+    def createNestedGrid(self, parentGrid, row, column, filler, name="Gride View title", ):
+        """
+        Add Nested Grid into Parend Grid. Addition will be in row and column, filled with filler.
+        :param parentGrid:
+        :param row:
+        :param column:
+        :param filler:
+        :param name:
+        :return:
+        """
+        graphGroupBox = QGroupBox(name)
+        print(filler)
+        parentGrid.addWidget(graphGroupBox, row, column)
+
+
+        graphGroupBox.setLayout(filler)
+        return parentGrid
+
 
 
 class LocalLayout:
@@ -128,6 +159,9 @@ class LocalLayout:
 
         figure = self.figure[num].plot(**textboxValue)
         self.globalLayout.addWidget(figure, 0, 1)
+
+
+
 
 
 class PlotCanvas(FigureCanvas):
