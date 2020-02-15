@@ -62,7 +62,7 @@ class App(QDialog):
         self.figure.append(PlotCanvas(self, model=model, width=5, height=4))
         self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
 
-        localLayout = LocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__defaults__)
+        localLayout = LocalLayout(("osc_min", "osc_max", "osc_step"), "evaluate", num=self.gRowIndex, figure=self.figure, globalLayout=self.globalLayout, default_values=model.__kwdefaults__)
         self.oscGroupBox.setLayout(localLayout.localLayout)
         "-----------------------------------------------------------------"
         """
@@ -80,7 +80,7 @@ class App(QDialog):
                                   num=self.gRowIndex,
                                   figure=self.figure,
                                   globalLayout=self.globalLayout,
-                                  default_values=model.__defaults__)
+                                  default_values=model.__kwdefaults__)
         self.rFromLambdaGroupBox.setLayout(localLayout.localLayout)
         """-------------------------------------------------------------"""
 
@@ -105,7 +105,7 @@ class App(QDialog):
                                   num=self.gRowIndex,
                                   figure=self.figure,
                                   globalLayout=self.globalLayout,
-                                  default_values=model.__defaults__
+                                  default_values=model.__kwdefaults__
                                   )
         # self.graphGroupBox.setLayout(localLayout.localLayout)
         self.globalLayout = self.createNestedGrid(self.globalLayout,
@@ -149,14 +149,14 @@ class LocalLayout:
 
         i = 0
         self.textboxList = {}
-        for string in args:     # so many labels, so many textboxes
-            self.textboxList[string] = QLineEdit()
+        for _string in args:     # so many labels, so many textboxes
+            self.textboxList[_string] = QLineEdit()
             if default_values:
-                self.textboxList[string].insert(str(default_values[i]))
+                self.textboxList[_string].insert(str(default_values[_string]))
             # self.textboxList[string].text()
             #self.textboxList[string].setValidator(QDoubleValidator()) #DON'T allow type "." charackter. Work wrong!
-            self.localLayout.addWidget(self.textboxList[string], i, 0)
-            self.localLayout.addWidget(QLabel(string), i, 1)
+            self.localLayout.addWidget(self.textboxList[_string], i, 0)
+            self.localLayout.addWidget(QLabel(_string), i, 1)
             i += 1
 
         self.evButton = QPushButton(evaluate)

@@ -24,7 +24,7 @@ class Timer:
 
 # create_config.__defaults__ #default args
 DEFAULT_CONFIG_DICT = create_config.__kwdefaults__      # default kwargs
-
+#print(create_config(**DEFAULT_CONFIG_DICT))
 
 def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators_number):
     r = np.zeros(time_output_array_length)
@@ -46,12 +46,21 @@ def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators
     return r
 
 
-def compute_system_ocl(osc_min=5, osc_max=6, osc_step=10):
-    local_config_dict = DEFAULT_CONFIG_DICT.copy()
-    local_config_dict.update(compute_system_ocl.__kwdefaults__)
+def update_old(_dict, new_dict):
+    old_keys = _dict.keys()
+    for key in new_dict:
+        if key in old_keys:
+            _dict[key] = new_dict[key]
+            
+
+def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
+
+    #local_config_dict.update(compute_system_ocl.__kwdefaults__)
     # TODO update default dictionary with local: dict.update()
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        config = create_config(oscillators_number=oscillators_number, filename=None,)
+        local_config_dict = DEFAULT_CONFIG_DICT.copy()
+        local_config_dict.update({"oscillators_number": oscillators_number})
+        config = create_config(**local_config_dict)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
         phase_vector[0] = config['phase_vector']
@@ -92,7 +101,7 @@ def compute_system_ocl_for_server(oscillators_number=55, community_number_to_det
     pendulum_phase_output_array = pendulum_phase_output_array
     return pendulum_phase_output_array, config
 
-def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10, topology="smallWorld"):
+def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10, topology="smallWorld"):
     """
 
     :param lmb_min:
@@ -107,11 +116,15 @@ def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, osci
         "barbell"
     :return:
     """
+
     r_out = []
     lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
 
     for _lambda in lambd_out:
-        config = create_config(lambd=_lambda, oscillators_number=oscillators_number, filename=None, topology=topology)
+        local_config_dict = DEFAULT_CONFIG_DICT.copy()
+        local_config_dict["lambd"] = _lambda
+        update_old(local_config_dict, compute_r_for_multiple_lambda_ocl.__kwdefaults__)
+        config = create_config(**local_config_dict)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
         phase_vector[0] = config['phase_vector']
@@ -128,22 +141,26 @@ def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, osci
     return lambd_out, r_out
 
 
-def compute_graph_properties_for_system(oscillators_number=100,
+def compute_graph_properties_for_system(*args,
+                                        oscillators_number=100,
                                         topology="smallWorld",
                                         reconnectionProbability = 0.01,
                                         neighbours=10
                                         ):
-    config = create_config(oscillators_number=oscillators_number, filename=None, topology=topology, reconnectionProbability=reconnectionProbability, neighbours=neighbours)
+    local_config_dict = DEFAULT_CONFIG_DICT.copy()
+    local_config_dict.update(compute_graph_properties_for_system.__kwdefaults__)
+
+    config = create_config(**local_config_dict)
     Aij = np.array(config["Aij"])
 
     # cut in, because cant insert itself into ap, there are only plots possible
     G = config["topology"]  # G means graph
 
     centrality = nx.degree_centrality(G).values()
-    print("graph degree_centrality, max: ", max(centrality), " ; min: ",min(centrality))
-    print("graph degree_histogram: ", G.degree())
-    # print("graph diameter: ",nx.diameter(G))
-    # print("graph clustering coefficient: ", nx.average_clustering(G))
+    #print("graph degree_centrality, max: ", max(centrality), " ; min: ",min(centrality))
+    #print("graph degree_histogram: ", G.degree())
+    ## print("graph diameter: ",nx.diameter(G))
+    ## print("graph clustering coefficient: ", nx.average_clustering(G))
 
 
     def find_rank_diagram_series(Aij):
@@ -173,4 +190,5 @@ def compute_graph_properties_for_system(oscillators_number=100,
 
 
 if __name__ == '__main__':
-    print(compute_system_ocl_for_server())
+    pass
+    #print(compute_system_ocl_for_server())
