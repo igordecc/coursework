@@ -51,7 +51,7 @@ def update_old(_dict, new_dict):
     for key in new_dict:
         if key in old_keys:
             _dict[key] = new_dict[key]
-            
+
 
 def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
 

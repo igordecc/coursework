@@ -34,6 +34,7 @@ class App(QDialog):
         self.createGridLayout()
 
         windowLayout = QVBoxLayout()
+        windowLayout.addWidget(QGroupBox())
         windowLayout.addWidget(self.horizontalGroupBox)
         self.setLayout(windowLayout)
 
