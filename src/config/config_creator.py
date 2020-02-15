@@ -5,15 +5,14 @@ from matplotlib import pyplot
 import networkx.algorithms.community as community
 
 
-def create_config(lambd=0.7,
+def create_config(*args,
+                  lambd=0.7,
                   oscillators_number=10,
                   filename=None,
                   topology="fullyConnected",
-                  reconnectionProbability = 0.15,
-                  neighbours = 10,
-                  community_number_to_detect = None,
-                  connection_prob = 0.3
-                  ):
+                  reconnectionProbability=0.15,
+                  neighbours=10,
+                  community_number_to_detect=None):
     """
     create config of the graph
     :param lambd: special parameter
@@ -37,7 +36,7 @@ def create_config(lambd=0.7,
 
     topologydict = {
         "fullyConnected".lower(): lambda: networkx.complete_graph(oscillators_number),
-        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, connection_prob),
+        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, reconnectionProbability),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
         "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),
         "barbell".lower(): lambda: networkx.barbell_graph(m1, m2)
@@ -69,7 +68,7 @@ def create_config(lambd=0.7,
 if __name__=="__main__":
     oscillators_number = 10
     community_number_to_detect = 3
-    config = create_config(oscillators_number=oscillators_number, topology="smallWorld", neighbours=5, reconnectionProbability=0.1)
+    config = create_config(oscillators_number=oscillators_number, topology="smallWorld", reconnectionProbability=0.1, neighbours=5)
 
 
     pos = networkx.drawing.fruchterman_reingold_layout(config['topology'])

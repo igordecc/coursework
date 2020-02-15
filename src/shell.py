@@ -22,6 +22,10 @@ class Timer:
         return self.t
 
 
+# create_config.__defaults__ #default args
+DEFAULT_CONFIG_DICT = create_config.__kwdefaults__      # default kwargs
+
+
 def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators_number):
     r = np.zeros(time_output_array_length)
     for i in range(time_output_array_length):
@@ -43,9 +47,11 @@ def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators
 
 
 def compute_system_ocl(osc_min=5, osc_max=6, osc_step=10):
-
+    local_config_dict = DEFAULT_CONFIG_DICT.copy()
+    local_config_dict.update(compute_system_ocl.__kwdefaults__)
+    # TODO update default dictionary with local: dict.update()
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        config = create_config(oscillators_number=oscillators_number, filename=None)
+        config = create_config(oscillators_number=oscillators_number, filename=None,)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
         phase_vector[0] = config['phase_vector']
@@ -64,7 +70,7 @@ def compute_system_ocl(osc_min=5, osc_max=6, osc_step=10):
         return pendulum_phase_output_array
 
 def compute_system_ocl_for_server(oscillators_number=55, community_number_to_detect = 4):
-    config = create_config(oscillators_number=oscillators_number, topology="barbell", community_number_to_detect=community_number_to_detect, filename=None)
+    config = create_config(oscillators_number=oscillators_number, filename=None, topology="barbell", community_number_to_detect=community_number_to_detect)
     # fullyConnected +
     # random +
     # freeScaling -
@@ -86,12 +92,26 @@ def compute_system_ocl_for_server(oscillators_number=55, community_number_to_det
     pendulum_phase_output_array = pendulum_phase_output_array
     return pendulum_phase_output_array, config
 
-def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10):
+def compute_r_for_multiple_lambda_ocl(lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10, topology="smallWorld"):
+    """
+
+    :param lmb_min:
+    :param lmb_max:
+    :param lmb_step:
+    :param oscillators_number:
+    :param topology:
+        "fullyConnected"
+        "random"
+        "freeScaling"
+        "smallWorld"
+        "barbell"
+    :return:
+    """
     r_out = []
     lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
 
     for _lambda in lambd_out:
-        config = create_config(lambd=_lambda, oscillators_number=oscillators_number, filename=None)
+        config = create_config(lambd=_lambda, oscillators_number=oscillators_number, filename=None, topology=topology)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
         phase_vector[0] = config['phase_vector']
@@ -113,10 +133,7 @@ def compute_graph_properties_for_system(oscillators_number=100,
                                         reconnectionProbability = 0.01,
                                         neighbours=10
                                         ):
-    config = create_config(oscillators_number=oscillators_number,
-                           topology=topology, filename=None,
-                           reconnectionProbability = reconnectionProbability,
-                           neighbours=neighbours)
+    config = create_config(oscillators_number=oscillators_number, filename=None, topology=topology, reconnectionProbability=reconnectionProbability, neighbours=neighbours)
     Aij = np.array(config["Aij"])
 
     # cut in, because cant insert itself into ap, there are only plots possible
