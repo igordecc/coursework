@@ -56,10 +56,9 @@ def update_dict_with_new_entries(_dict, new_dict):
 def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
 
     #local_config_dict.update(compute_system_ocl.__kwdefaults__)
-    # TODO update default dictionary with local: dict.update()
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
         local_config_dict = DEFAULT_CONFIG_DICT.copy()
-        local_config_dict.update({"oscillators_number": oscillators_number}) # TODO update through recalling config_creator function
+        local_config_dict.update({"oscillators_number": oscillators_number})
         config = create_config(**local_config_dict)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
@@ -133,14 +132,6 @@ def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.
         omega_vector = np.array(config['omega_vector'], dtype=np.float32)
         Aij = np.array(config['Aij'], dtype=np.float32)
 
-        print([omega_vector,
-                                                                                                     config['lambd'],
-                                                                                                     Aij,
-                                                                                                     phase_vector,
-                                                                                                     config['t0'],
-                                                                                                     config['tf'],
-                                                                                                     config['oscillators_number'],
-                                                                                                     config['N']])
         pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector,
                                                                                                      config['lambd'],
                                                                                                      Aij,

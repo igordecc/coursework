@@ -35,14 +35,14 @@ def compute_time_series_for_system_ocl(omega_vector, lambda_c, A, phase_vector, 
 
     platformsNum = 0    #определяем объект устройства (девайса)
     deviceNum = 0
-    print("platforms --")
-    print(cl.get_platforms())
-    print(cl.get_platforms()[platformsNum])
-    print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum])
-    print("devices ------")
-    print(cl.device_type)
-    print(cl.device_type.GPU)
-    print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU))
+    # print("platforms --")
+    # print(cl.get_platforms())
+    # print(cl.get_platforms()[platformsNum])
+    # print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum])
+    # print("devices ------")
+    # print(cl.device_type)
+    # print(cl.device_type.GPU)
+    # print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU))
 
     device = cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum]
 
