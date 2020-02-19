@@ -8,6 +8,9 @@ import networkx.algorithms.community as community
 def create_config(*args,
                   lambd=0.7,
                   oscillators_number=10,
+                  start_time=0,
+                  final_time=100,
+                  iteration_number=200,
                   filename=None,
                   topology="fullyConnected",
                   reconnectionProbability=0.15,
@@ -44,9 +47,9 @@ def create_config(*args,
     config['topology'] = topologydict[topology.lower()]()
     config['Aij'] = networkx.to_numpy_array(config['topology'])
     config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
-    config['t0'] = 0
-    config['tf'] = 100
-    config['N'] = 200  #iteration count
+    config['t0'] = start_time
+    config['tf'] = final_time
+    config['N'] = iteration_number  #iteration count
     config['h'] = (config['tf']-config['t0'])/config['N']
 
     # community detection

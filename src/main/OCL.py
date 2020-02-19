@@ -35,7 +35,17 @@ def compute_time_series_for_system_ocl(omega_vector, lambda_c, A, phase_vector, 
 
     platformsNum = 0    #определяем объект устройства (девайса)
     deviceNum = 0
+    print("platforms --")
+    print(cl.get_platforms())
+    print(cl.get_platforms()[platformsNum])
+    print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum])
+    print("devices ------")
+    print(cl.device_type)
+    print(cl.device_type.GPU)
+    print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU))
+
     device = cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum]
+
 
     context = cl.Context(devices=[device]) #, dev_type=None     #создаём контекст и очередь
     queue = cl.CommandQueue(context) #,properties=cl.command_queue_properties.PROFILING_ENABLE)
@@ -74,6 +84,6 @@ def compute_time_series_for_system_ocl(omega_vector, lambda_c, A, phase_vector, 
 
 
     time_queue = perf_counter() - time_queue
-
+    print(time_queue)
     return phase_vector, time_queue
 

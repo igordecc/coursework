@@ -46,7 +46,7 @@ def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators
     return r
 
 
-def update_old(_dict, new_dict):
+def update_dict_with_new_entries(_dict, new_dict):
     old_keys = _dict.keys()
     for key in new_dict:
         if key in old_keys:
@@ -59,7 +59,7 @@ def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
     # TODO update default dictionary with local: dict.update()
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
         local_config_dict = DEFAULT_CONFIG_DICT.copy()
-        local_config_dict.update({"oscillators_number": oscillators_number})
+        local_config_dict.update({"oscillators_number": oscillators_number}) # TODO update through recalling config_creator function
         config = create_config(**local_config_dict)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
@@ -67,6 +67,7 @@ def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
 
         omega_vector = np.array(config['omega_vector'], dtype=np.float32)
         Aij = np.array(config['Aij'], dtype=np.float32)
+
         pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector,
                                                                                                      config['lambd'],
                                                                                                      Aij,
@@ -101,7 +102,7 @@ def compute_system_ocl_for_server(oscillators_number=55, community_number_to_det
     pendulum_phase_output_array = pendulum_phase_output_array
     return pendulum_phase_output_array, config
 
-def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10, topology="smallWorld"):
+def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.1, oscillators_number=10, topology="smallWorld", **kwargs):
     """
 
     :param lmb_min:
@@ -123,7 +124,7 @@ def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.
     for _lambda in lambd_out:
         local_config_dict = DEFAULT_CONFIG_DICT.copy()
         local_config_dict["lambd"] = _lambda
-        update_old(local_config_dict, compute_r_for_multiple_lambda_ocl.__kwdefaults__)
+        update_dict_with_new_entries(local_config_dict, locals())
         config = create_config(**local_config_dict)
 
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
@@ -132,7 +133,22 @@ def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.
         omega_vector = np.array(config['omega_vector'], dtype=np.float32)
         Aij = np.array(config['Aij'], dtype=np.float32)
 
-        pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector, config['lambd'], Aij, phase_vector, a=config['t0'], b=config['tf'], oscillators_number=config['oscillators_number'], N_parts=config['N'])
+        print([omega_vector,
+                                                                                                     config['lambd'],
+                                                                                                     Aij,
+                                                                                                     phase_vector,
+                                                                                                     config['t0'],
+                                                                                                     config['tf'],
+                                                                                                     config['oscillators_number'],
+                                                                                                     config['N']])
+        pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector,
+                                                                                                     config['lambd'],
+                                                                                                     Aij,
+                                                                                                     phase_vector,
+                                                                                                     a=config['t0'],
+                                                                                                     b=config['tf'],
+                                                                                                     oscillators_number=config['oscillators_number'],
+                                                                                                     N_parts=config['N'])
         time_output_array_length = config['N']
         r_array = compute_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
         n = int(time_output_array_length/2)
@@ -190,5 +206,21 @@ def compute_graph_properties_for_system(*args,
 
 
 if __name__ == '__main__':
-    pass
+    # DEFAULT_CONFIG_DICT = create_config.__kwdefaults__
+    import matplotlib.pyplot as plt
+
+
+
+    print()
+    r_for_different_oscillators_number = []
+    osc_number_series = [oscillators_number for oscillators_number in range(10**4, 10**5, 10)]
+    for oscillators_number in osc_number_series:
+        lambda_series, r_series = compute_r_for_multiple_lambda_ocl(oscillators_number=oscillators_number, lmb_max=5)
+        r_for_different_oscillators_number.append(r_series[np.where(lambda_series==2.5)])
+
+    plt.plot(osc_number_series, r_for_different_oscillators_number)
+    plt.grid()
+    plt.show()
+
+
     #print(compute_system_ocl_for_server())
