@@ -6,7 +6,7 @@ import numpy as np
 from PyQt5.QtCore import pyqtSlot
 # PyQt5 UI stuff. Widjets, midjets etc.
 from PyQt5.QtWidgets import QLineEdit, QApplication, QPushButton, QSizePolicy, QGroupBox, QDialog, QVBoxLayout, QGridLayout, QLabel, QWidget
-
+from PyQt5 import QtWidgets, QtCore
 # matplot libraries need to do plotting stuff
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -16,26 +16,95 @@ from matplotlib.figure import Figure
 import shell
 
 
-class App(QDialog):
+class _CheckBar(QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding
+        )
+
+        barLayout = QGridLayout()
+        barLayout.setColumnStretch(4,1)
+
+        name_list = [
+            "show default parameters",
+            "show first plot",
+            "show second plot",
+            "show third plot"
+        ]
+
+        self.checkbox = []
+        for i in range(4):
+            self.checkbox.append(QtWidgets.QCheckBox())
+            self.checkbox[i].setText(name_list[i])
+            self.trigger = QtCore.pyqtSignal()
+
+            self.checkbox[i].isChecked()
+            barLayout.addWidget(self.checkbox[i], i, 0)
+
+        self.setLayout(barLayout)
+
+
+    def changeEvent(self, e):
+        pass
+
+    def sizeHint(self):
+        return QtCore.QSize(40,120)
+
+    def _trigger_refresh(self):
+        self.update()
+
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.Qt import pyqtSignal as Signal
+class Foo(QWidget):
+    trigger = Signal()
 
     def __init__(self):
         super().__init__()
+        # Define a new signal called 'trigger' that has no arguments.
+        self.checkbox = QtWidgets.QCheckBox()
+
+    def connect_and_emit_trigger(self):
+        # Connect the trigger signal to a slot.
+        self.trigger.connect(self.handle_trigger)
+
+        # Emit the signal.
+        self.trigger.emit()
+
+    def handle_trigger(self):
+        # Show that the slot has been called.
+
+        print("trigger signal received")
+
+
+
+class App(QWidget):
+
+    def __init__(self, parent=None):
+        super(QWidget , self).__init__(parent)
         self.title = 'PyQt5 layout'
         self.left = 400
         self.top = 200
         self.width = 800
         self.height = 600
+        Foo()
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
+        windowLayout = QVBoxLayout()
+        self._CheckBar = _CheckBar()
+        self.checkbox = self._CheckBar.checkbox
+        windowLayout.addWidget(self._CheckBar)
+
         self.createGridLayout()
 
-        windowLayout = QVBoxLayout()
-        windowLayout.addWidget(QGroupBox())
         windowLayout.addWidget(self.horizontalGroupBox)
+
         self.setLayout(windowLayout)
 
         # m.move(0, 0)
@@ -84,37 +153,38 @@ class App(QDialog):
                                   default_values=model.__kwdefaults__)
         self.rFromLambdaGroupBox.setLayout(localLayout.localLayout)
         """-------------------------------------------------------------"""
+        if self._CheckBar.checkbox[3].isChecked():
 
-        self.gRowIndex += 1
+            self.gRowIndex += 1
 
-        # self.graphGroupBox = QGroupBox("graph properties")
-        # self.globalLayout.addWidget(self.graphGroupBox, self.gRowIndex, 0)
-        #
-        model = shell.compute_graph_properties_for_system
-        self.figure.append(PlotCanvas(self, model=model, width=5, height=4, lables=("xlable","ylable")))
-        self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
-        localLayout = QGridLayout()
-        localLayout.addWidget(self.figure[self.gRowIndex])
-        self.globalLayout = self.createNestedGrid(self.globalLayout,
-                                                  self.gRowIndex,
-                                                  1,
-                                                  localLayout,
-                                                  "plot")
+            # self.graphGroupBox = QGroupBox("graph properties")
+            # self.globalLayout.addWidget(self.graphGroupBox, self.gRowIndex, 0)
+            #
+            model = shell.compute_graph_properties_for_system
+            self.figure.append(PlotCanvas(self, model=model, width=5, height=4, lables=("xlable","ylable")))
+            self.globalLayout.addWidget(self.figure[self.gRowIndex], self.gRowIndex, 1)
+            localLayout = QGridLayout()
+            localLayout.addWidget(self.figure[self.gRowIndex])
+            self.globalLayout = self.createNestedGrid(self.globalLayout,
+                                                      self.gRowIndex,
+                                                      1,
+                                                      localLayout,
+                                                      "plot")
 
-        localLayout = LocalLayout(("oscillators_number", "topology", "reconnectionProbability","neighbours"),
-                                  "evaluate",
-                                  num=self.gRowIndex,
-                                  figure=self.figure,
-                                  globalLayout=self.globalLayout,
-                                  default_values=model.__kwdefaults__
-                                  )
-        # self.graphGroupBox.setLayout(localLayout.localLayout)
-        self.globalLayout = self.createNestedGrid(self.globalLayout,
-                                                  self.gRowIndex,
-                                                  0,
-                                                  localLayout.localLayout,
-                                                  "graph properties NEW")
-        "-----------------------------------------------------------"
+            localLayout = LocalLayout(("oscillators_number", "topology", "reconnectionProbability","neighbours"),
+                                      "evaluate",
+                                      num=self.gRowIndex,
+                                      figure=self.figure,
+                                      globalLayout=self.globalLayout,
+                                      default_values=model.__kwdefaults__
+                                      )
+            # self.graphGroupBox.setLayout(localLayout.localLayout)
+            self.globalLayout = self.createNestedGrid(self.globalLayout,
+                                                      self.gRowIndex,
+                                                      0,
+                                                      localLayout.localLayout,
+                                                      "graph properties NEW")
+            "-----------------------------------------------------------"
         self.horizontalGroupBox.setLayout(self.globalLayout)
 
     def createNestedGrid(self, parentGrid, row, column, fillerGrid, name="Gride View title", ):
