@@ -214,5 +214,7 @@ if __name__ == '__main__':
 
     plt.show()
 
-
+    # TODO  write optimal parameters hints
+    # TODO write optimazed r(oscillators_number) plot function
+    # TODO write T transition process checker
     #print(compute_system_ocl_for_server())
