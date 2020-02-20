@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 from networkx import nx
+import matplotlib.pyplot as plt
 
 from config.config_creator import create_config
 from main.OCL import compute_time_series_for_system_ocl
@@ -23,7 +24,7 @@ class Timer:
 
 
 # create_config.__defaults__ #default args
-DEFAULT_CONFIG_DICT = create_config.__kwdefaults__      # default kwargs
+DEFAULT_CONFIG_PARAMETERS_DICT = create_config.__kwdefaults__      # default kwargs
 #print(create_config(**DEFAULT_CONFIG_DICT))
 
 def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators_number):
@@ -57,7 +58,7 @@ def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
 
     #local_config_dict.update(compute_system_ocl.__kwdefaults__)
     for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        local_config_dict = DEFAULT_CONFIG_DICT.copy()
+        local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
         local_config_dict.update({"oscillators_number": oscillators_number})
         config = create_config(**local_config_dict)
 
@@ -121,7 +122,7 @@ def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.
     lambd_out = np.arange(lmb_min, lmb_max, lmb_step)
 
     for _lambda in lambd_out:
-        local_config_dict = DEFAULT_CONFIG_DICT.copy()
+        local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
         local_config_dict["lambd"] = _lambda
         update_dict_with_new_entries(local_config_dict, locals())
         config = create_config(**local_config_dict)
@@ -140,9 +141,10 @@ def compute_r_for_multiple_lambda_ocl(*args, lmb_min=0, lmb_max=2.5, lmb_step=0.
                                                                                                      b=config['tf'],
                                                                                                      oscillators_number=config['oscillators_number'],
                                                                                                      N_parts=config['N'])
-        time_output_array_length = config['N']
-        r_array = compute_r(time_output_array_length, pendulum_phase_output_array, oscillators_number)
-        n = int(time_output_array_length/2)
+        # wats going on there?
+        iterations_number = config['N']
+        r_array = compute_r(iterations_number, pendulum_phase_output_array, oscillators_number)
+        n = int(iterations_number/2)
         r_out.append(sum(r_array[-n:])/n)
     r_out = np.array(r_out)
     return lambd_out, r_out
@@ -154,7 +156,7 @@ def compute_graph_properties_for_system(*args,
                                         reconnectionProbability = 0.01,
                                         neighbours=10
                                         ):
-    local_config_dict = DEFAULT_CONFIG_DICT.copy()
+    local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
     local_config_dict.update(compute_graph_properties_for_system.__kwdefaults__)
 
     config = create_config(**local_config_dict)
@@ -196,25 +198,53 @@ def compute_graph_properties_for_system(*args,
     return diagram_data
 
 
-if __name__ == '__main__':
-    # DEFAULT_CONFIG_DICT = create_config.__kwdefaults__
-    import matplotlib.pyplot as plt
-    from time import perf_counter
+def calculate_r_from_parameter(parameter_name, parameter_series):
+    r_series = []
+    local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
+    local_config_dict['topology'] = 'smallworld'
+    local_config_dict['lambd'] = 2.
+    if parameter_name not in local_config_dict.keys():
+        raise ValueError("Wrong parameter_name: {}".format(parameter_name))
+    for parameter in parameter_series:
+        local_config_dict[parameter_name] = parameter
+        config = create_config(**local_config_dict)
+        oscillators_number = config['oscillators_number']
+        phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
+        phase_vector[0] = config['phase_vector']
+        pendulum_phase, _ = compute_time_series_for_system_ocl(
+            omega_vector=np.array(config['omega_vector'], dtype=np.float32),
+            lambda_c=config['lambd'],
+            A=np.array(config['Aij'], dtype=np.float32),
+            phase_vector=phase_vector,
+            a=config['t0'],
+            b=config['tf'],
+            oscillators_number=config['oscillators_number'],
+            N_parts=config['N']
+        )
+        # calculate average r
+        N = config['N']     # iterations number
+        r_array = compute_r(N, pendulum_phase, oscillators_number)
+        n = N // 2
+        r_series.append(sum(r_array[-n:]) / n)
+    r_series = np.array(r_series)
+    return parameter_series, r_series
 
-    r_for_different_oscillators_number = []
-    osc_number_series = [oscillators_number for oscillators_number in range(10**4, 10**5, 10)]
-    for oscillators_number in osc_number_series:
 
-        lambda_series, r_series = compute_r_for_multiple_lambda_ocl(oscillators_number=oscillators_number, lmb_max=5)
-        r_for_different_oscillators_number.append(r_series[np.where(lambda_series==2.5)])
-
-    plt.plot(osc_number_series, r_for_different_oscillators_number)
+def plot_series(x_series, y_series):
+    plt.plot(x_series, y_series)
     plt.grid()
-
-
     plt.show()
 
-    # TODO  write optimal parameters hints
-    # TODO write optimazed r(oscillators_number) plot function
-    # TODO write T transition process checker
+if __name__ == '__main__':
+    # DEFAULT_CONFIG_DICT = create_config.__kwdefaults__
+    oscillators_number = [i for i in np.arange(100, 1000, 10)]
+    print(oscillators_number)
+
+    plot_series(*calculate_r_from_parameter( "oscillators_number", oscillators_number ))
+
+
+    # DONE write optimized r(parameter) plot function
+    # TODO replace r-finder program (which calculate many r), with analog (with just pick last r)
+    # # because there is still inconsistensy with avarage r's - better just do more calcs.
+
     #print(compute_system_ocl_for_server())
