@@ -199,18 +199,19 @@ def compute_graph_properties_for_system(*args,
 if __name__ == '__main__':
     # DEFAULT_CONFIG_DICT = create_config.__kwdefaults__
     import matplotlib.pyplot as plt
+    from time import perf_counter
 
-
-
-    print()
     r_for_different_oscillators_number = []
     osc_number_series = [oscillators_number for oscillators_number in range(10**4, 10**5, 10)]
     for oscillators_number in osc_number_series:
+
         lambda_series, r_series = compute_r_for_multiple_lambda_ocl(oscillators_number=oscillators_number, lmb_max=5)
         r_for_different_oscillators_number.append(r_series[np.where(lambda_series==2.5)])
 
     plt.plot(osc_number_series, r_for_different_oscillators_number)
     plt.grid()
+
+
     plt.show()
 
 
