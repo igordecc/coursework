@@ -46,6 +46,12 @@ def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators
 
     return r
 
+# calculate last r
+def compute_last_r(series):
+    last_iteration = series[-1]
+    oscillators_number = len(last_iteration)
+    r = compute_r(1, [last_iteration, ], oscillators_number)
+    return r
 
 def update_dict_with_new_entries(_dict, new_dict):
     old_keys = _dict.keys()
@@ -203,6 +209,7 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
     local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
     local_config_dict['topology'] = 'smallworld'
     local_config_dict['lambd'] = 2.
+    local_config_dict['oscillators_number'] = 100
     if parameter_name not in local_config_dict.keys():
         raise ValueError("Wrong parameter_name: {}".format(parameter_name))
     for parameter in parameter_series:
@@ -221,11 +228,19 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
             oscillators_number=config['oscillators_number'],
             N_parts=config['N']
         )
-        # calculate average r
-        N = config['N']     # iterations number
-        r_array = compute_r(N, pendulum_phase, oscillators_number)
-        n = N // 2
-        r_series.append(sum(r_array[-n:]) / n)
+        # # calculate average r
+        def compute_average_r(series):
+            # time 154.44 sec
+            oscillators_number = len(series[0])
+            N = len(series)    # iterations number
+            stable_series = series[N//2:-1]
+            n = len(stable_series)
+            r_array = compute_r(n, stable_series, oscillators_number)
+            r_average = sum(r_array)/n
+            return r_average
+
+
+        r_series.append(compute_last_r(pendulum_phase))
     r_series = np.array(r_series)
     return parameter_series, r_series
 
@@ -237,14 +252,22 @@ def plot_series(x_series, y_series):
 
 if __name__ == '__main__':
     # DEFAULT_CONFIG_DICT = create_config.__kwdefaults__
-    oscillators_number = [i for i in np.arange(100, 1000, 10)]
-    print(oscillators_number)
+    start_time = time.perf_counter()
+    oscillators_number = [i for i in np.arange(100, 1000, 1)] # 154 sec for [100,1000,1] # 129 sec with last r (-20 sec!)
+    reconnectionProbability = [i for i in np.arange(0, 1, 0.01)]
+    # data = calculate_r_from_parameter("reconnectionProbability", reconnectionProbability)
+    data = calculate_r_from_parameter("oscillators_number", oscillators_number)
 
-    plot_series(*calculate_r_from_parameter( "oscillators_number", oscillators_number ))
+    print("time : " + str(time.perf_counter() - start_time))
+    plot_series(*data)
 
 
     # DONE write optimized r(parameter) plot function
-    # TODO replace r-finder program (which calculate many r), with analog (with just pick last r)
+    # DONE replace r-finder program (which calculate many r), with analog (with just pick last r)
     # # because there is still inconsistensy with avarage r's - better just do more calcs.
+
+    # TODO pandas plot interpolation
+    # TODO multiple plot series on one plot
+    # TODO aut-legend depended on enter parameters
 
     #print(compute_system_ocl_for_server())

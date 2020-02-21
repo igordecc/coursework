@@ -31,7 +31,6 @@ kernel void  kuramoto_equation(
 }"""
 
 def compute_time_series_for_system_ocl(omega_vector, lambda_c, A, phase_vector, kernel_src=kernel_src_main, a=0, b=200, oscillators_number=16 * 10000000, N_parts=2000):
-    build_time_queue = perf_counter()
     h = abs(a - b) / N_parts
 
     platformsNum = 0    #определяем объект устройства (девайса)
@@ -85,7 +84,6 @@ def compute_time_series_for_system_ocl(omega_vector, lambda_c, A, phase_vector, 
 
 
     time_queue = perf_counter() - time_queue
-    print(time_queue)
-    print("builded: " + str( perf_counter() - build_time_queue) )
+    # print(time_queue)
     return phase_vector, time_queue
 
