@@ -53,6 +53,18 @@ def compute_last_r(series):
     r = compute_r(1, [last_iteration, ], oscillators_number)
     return r
 
+
+def compute_average_r(series):
+    # time 154.44 sec
+    oscillators_number = len(series[0])
+    N = len(series)  # iterations number
+    stable_series = series[N // 2:-1]
+    n = len(stable_series)
+    r_array = compute_r(n, stable_series, oscillators_number)
+    r_average = sum(r_array) / n
+    return r_average
+
+
 def update_dict_with_new_entries(_dict, new_dict):
     old_keys = _dict.keys()
     for key in new_dict:
@@ -229,15 +241,7 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
             N_parts=config['N']
         )
         # # calculate average r
-        def compute_average_r(series):
-            # time 154.44 sec
-            oscillators_number = len(series[0])
-            N = len(series)    # iterations number
-            stable_series = series[N//2:-1]
-            n = len(stable_series)
-            r_array = compute_r(n, stable_series, oscillators_number)
-            r_average = sum(r_array)/n
-            return r_average
+
 
 
         r_series.append(compute_last_r(pendulum_phase))
@@ -264,10 +268,11 @@ if __name__ == '__main__':
 
     # DONE write optimized r(parameter) plot function
     # DONE replace r-finder program (which calculate many r), with analog (with just pick last r)
-    # # because there is still inconsistensy with avarage r's - better just do more calcs.
+    # # because there is still inconsistency with avarage r's - better just do more calcs.
 
     # TODO pandas plot interpolation
     # TODO multiple plot series on one plot
     # TODO aut-legend depended on enter parameters
+    # TODO plot results as independent plot-program
 
     #print(compute_system_ocl_for_server())
