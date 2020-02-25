@@ -240,39 +240,68 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
             oscillators_number=config['oscillators_number'],
             N_parts=config['N']
         )
-        # # calculate average r
-
-
-
         r_series.append(compute_last_r(pendulum_phase))
-    r_series = np.array(r_series)
+    global r_from_parameter_config
+    r_from_parameter_config = config
+    parameter_series = np.array(parameter_series, dtype=np.float)
+    r_series = np.array([i for j in r_series for i in j], dtype=np.float)
     return parameter_series, r_series
 
 
 def plot_series(x_series, y_series):
-    plt.plot(x_series, y_series)
+    plt.plot(x_series, y_series, "b.")
+    plt.grid()
+    plt.show()
+
+
+def extended_plot(x, y, x_label, y_label, printable_info):
+    """
+    plot with legend and all that stuff
+    :return:
+    """
+
+    start_time = time.perf_counter()
+    print("time : " + str(time.perf_counter() - start_time))
+
+    import scipy
+    from scipy.optimize import curve_fit
+    coeffs = scipy.polyfit(x,y, 3)
+    smooth_curve = scipy.polyval(coeffs, x)
+    plt.plot(x, y, "b.")
+    # plt.plot(x, smooth_curve,"r")
+    f0 = lambda t, a, b, c: a*np.exp(-t*b) + c
+    print(x)
+    print(y)
+    optimised_curve, _ = curve_fit(f0,  x,  y, p0=(0.01,1, 0.7))
+    print("optimised_curve", optimised_curve)
+
+    plt.plot(x, f0(x, *optimised_curve), "m")
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    # print(printable_info)
     plt.grid()
     plt.show()
 
 if __name__ == '__main__':
-    # DEFAULT_CONFIG_DICT = create_config.__kwdefaults__
-    start_time = time.perf_counter()
-    oscillators_number = [i for i in np.arange(100, 1000, 1)] # 154 sec for [100,1000,1] # 129 sec with last r (-20 sec!)
-    reconnectionProbability = [i for i in np.arange(0, 1, 0.01)]
-    # data = calculate_r_from_parameter("reconnectionProbability", reconnectionProbability)
-    data = calculate_r_from_parameter("oscillators_number", oscillators_number)
 
-    print("time : " + str(time.perf_counter() - start_time))
-    plot_series(*data)
+    oscillators_number = np.arange(200, 1000, 10) # 154 sec for [100,1000,1] # 129 sec with last r (-20 sec!)
+
+    oscillators_number = np.concatenate((np.arange(101, 200, 1), oscillators_number, ))
+
+    x,y = calculate_r_from_parameter("oscillators_number", oscillators_number)
+    x = oscillators_number / 1000
+
+    extended_plot(x,y, "oscillators_number", "r", r_from_parameter_config)
+    # reconnectionProbability = [i for i in np.arange(0, 1, 0.01)]
+    # data = calculate_r_from_parameter("reconnectionProbability", reconnectionProbability)
+
+
 
 
     # DONE write optimized r(parameter) plot function
     # DONE replace r-finder program (which calculate many r), with analog (with just pick last r)
     # # because there is still inconsistency with avarage r's - better just do more calcs.
 
-    # TODO pandas plot interpolation
-    # TODO multiple plot series on one plot
-    # TODO aut-legend depended on enter parameters
-    # TODO plot results as independent plot-program
+
 
     #print(compute_system_ocl_for_server())
