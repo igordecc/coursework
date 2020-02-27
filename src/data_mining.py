@@ -79,6 +79,7 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
     local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
     local_config_dict['topology'] = 'smallworld'
     local_config_dict['lambd'] = 2.
+    local_config_dict['reconnectionProbability'] = 0.15
     local_config_dict['oscillators_number'] = 100
     if parameter_name not in local_config_dict.keys():
         raise ValueError("Wrong parameter_name: {}".format(parameter_name))
@@ -101,26 +102,62 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
         r_series.append(compute_last_r(pendulum_phase))
     global r_from_parameter_config
     r_from_parameter_config = config
-    parameter_series = np.array(parameter_series, dtype=np.float)
+    parameter_series = np.array(parameter_series)
     r_series = np.array([i for j in r_series for i in j], dtype=np.float)
     return parameter_series, r_series
 
-
-# ---- application ---with real numbers
-def calculate_r_from_oscillators_number():
-
-    # 154 sec for [100,1000,1] # 129 sec with last r (-20 sec!)
-    oscillators_number = np.arange(100, 1000,1)
-
-    x,y = calculate_r_from_parameter("oscillators_number", oscillators_number)
-    file='./log/r_from_oscillator_number.txt'
+# Evaluation time note: osc numbers [100,1000,1]    154 sec for average r   and  129 sec with last r (-20 sec!)
+# ---- application functions
+def filewrite(parameter_name:str, x, y):
+    file = './log/r_from_' + parameter_name + '.txt'
     with open(file, "w") as myfile:
         for i in range(len(x)):
             myfile.write(str(x[i]) + " " + str(y[i]) + "\n")
 
 
+def calculate_r_from_oscillators_number():
 
-    # extended_plot(x,y, "oscillators_number", "r", r_from_parameter_config)
+    oscillators_number = np.arange(100, 1000, 1)
+
+    parameter_name = "oscillators_number"
+    x,y = calculate_r_from_parameter(parameter_name, oscillators_number)
+    filewrite(parameter_name, x, y)
+
+
+def calculate_r_from_topology():
+
+    topology = [
+        'smallWorld',
+        'freeScaling',
+        'regular',
+        'random'
+    ]
+
+    parameter_name = "topology"
+    x,y = calculate_r_from_parameter(parameter_name, topology)
+    filewrite(parameter_name, x, y)
+
+
+def calculate_r_from_reconnection_probability():
+
+    reconnection_probability = np.arange(0, 1, 10**-3)
+
+    parameter_name = "reconnectionProbability"
+    x,y = calculate_r_from_parameter(parameter_name, reconnection_probability)
+    filewrite(parameter_name, x, y)
+
+
+def calculate_r_from_lambda():
+
+    _lambda = np.arange(0.1, 5, 0.01)
+
+    parameter_name = "lambd"
+    x, y = calculate_r_from_parameter(parameter_name, _lambda)
+    filewrite(parameter_name, x, y)
+
 
 if __name__ == '__main__':
-    calculate_r_from_oscillators_number()
+    # calculate_r_from_oscillators_number()
+    # calculate_r_from_reconnection_probability()
+    # calculate_r_from_topology()
+    calculate_r_from_lambda()
