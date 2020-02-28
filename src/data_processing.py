@@ -52,16 +52,29 @@ def plot_data(data, fmt="."):
     plt.show()
 
 
+def save_data_img(data, filename, fmt="."):
+    plt.grid()
+    plt.plot(*data, fmt)
+    plt.savefig("./img/" + filename + ".png")
 
+
+def _path(filename:str):
+    return "./log/r_from_" + filename + ".txt"
 
 if __name__ == '__main__':
-    FILENAMES = [
+    FILEPATHS = [
     "./log/r_from_oscillator_number.txt",
     "./log/r_from_lambd.txt",
     "./log/r_from_reconnection_probability.txt",
     "./log/r_from_topology.txt",
 ]
-    data = read_wordy_file(FILENAMES[3])
-    print(data)
-    plot_data(data)
+    FILENAMES = [
+        "oscillator_number",
+        "lambd",
+        "reconnection_probability",
+        "topology"
+    ]
+    filename = FILENAMES[2]
+    data = read_wordy_file(_path(filename))
+    save_data_img(data, filename)
     # plot_data(data)
