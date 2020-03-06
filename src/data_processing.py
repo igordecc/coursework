@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+FOLDER = ""
+SAVE_FOLDER = ""
+
 
 def read_file_and_print(filename):
     with open(filename, "r") as myfile:
@@ -43,7 +46,7 @@ def read_wordy_file(filename):
         rows = np.array([[item for item in row.split()] for row in lines])
         columns = rows.transpose()
         new_columns = [[float(i) for i in column] if isfloat(column[0]) else column for column in columns]
-        return new_columns
+    return new_columns
 
 
 def plot_data(data, fmt="."):
@@ -54,27 +57,31 @@ def plot_data(data, fmt="."):
 
 def save_data_img(data, filename, fmt="."):
     plt.grid()
+    plt.ylabel("r")
+    plt.xlabel(filename)
     plt.plot(*data, fmt)
-    plt.savefig("./img/" + filename + ".png")
+    plt.savefig("./img"+SAVE_FOLDER+"/" + filename + ".png")
+    plt.close()
 
 
 def _path(filename:str):
-    return "./log/r_from_" + filename + ".txt"
+    return "./log"+FOLDER+"/r_from_" + filename + ".txt"
 
-if __name__ == '__main__':
-    FILEPATHS = [
-    "./log/r_from_oscillator_number.txt",
-    "./log/r_from_lambd.txt",
-    "./log/r_from_reconnection_probability.txt",
-    "./log/r_from_topology.txt",
-]
-    FILENAMES = [
-        "oscillator_number",
-        "lambd",
-        "reconnection_probability",
-        "topology"
-    ]
-    filename = FILENAMES[2]
+def read_plot_save(filename):
     data = read_wordy_file(_path(filename))
     save_data_img(data, filename)
     # plot_data(data)
+
+if __name__ == '__main__':
+    FILENAMES = [
+        "oscillators_number",
+        "lambd",
+        "reconnectionProbability", # -sf -regular
+        #"topology"
+    ]
+    FOLDER = "/regular"
+    SAVE_FOLDER = "/regular"
+    for filename in FILENAMES:
+        read_plot_save(filename)
+
+

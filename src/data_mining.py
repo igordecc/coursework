@@ -7,6 +7,8 @@ from main.OCL import compute_time_series_for_system_ocl
 from config.config_creator import create_config
 DEFAULT_CONFIG_PARAMETERS_DICT = create_config.__kwdefaults__
 
+FOLDER = "/sf"
+TOPOLOGY = "freeScaling"
 
 # --------- smallest unit for data mining
 def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
@@ -77,7 +79,7 @@ def compute_average_r(series):
 def calculate_r_from_parameter(parameter_name, parameter_series):
     r_series = []
     local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
-    local_config_dict['topology'] = 'smallworld'
+    local_config_dict['topology'] = TOPOLOGY
     local_config_dict['lambd'] = 2.
     local_config_dict['reconnectionProbability'] = 0.15
     local_config_dict['oscillators_number'] = 100
@@ -106,10 +108,11 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
     r_series = np.array([i for j in r_series for i in j], dtype=np.float)
     return parameter_series, r_series
 
+
 # Evaluation time note: osc numbers [100,1000,1]    154 sec for average r   and  129 sec with last r (-20 sec!)
 # ---- application functions
 def filewrite(parameter_name:str, x, y):
-    file = './log/r_from_' + parameter_name + '.txt'
+    file = './log'+FOLDER+'/r_from_' + parameter_name + '.txt'
     with open(file, "w") as myfile:
         for i in range(len(x)):
             myfile.write(str(x[i]) + " " + str(y[i]) + "\n")
@@ -143,7 +146,7 @@ def calculate_r_from_reconnection_probability():
     reconnection_probability = np.arange(0, 1, 10**-3)
 
     parameter_name = "reconnectionProbability"
-    x,y = calculate_r_from_parameter(parameter_name, reconnection_probability)
+    x,y = calculate_r_from_parameter(parameter_name, reconnection_probability )
     filewrite(parameter_name, x, y)
 
 
@@ -156,8 +159,11 @@ def calculate_r_from_lambda():
     filewrite(parameter_name, x, y)
 
 
+
 if __name__ == '__main__':
+    TOPOLOGY = "random"
+    FOLDER = "/random"
     # calculate_r_from_oscillators_number()
-    # calculate_r_from_reconnection_probability()
+    calculate_r_from_reconnection_probability()
+    # calculate_r_from_lambda()
     # calculate_r_from_topology()
-    calculate_r_from_lambda()
