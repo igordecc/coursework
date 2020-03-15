@@ -117,6 +117,12 @@ def filewrite(parameter_name:str, x, y):
         for i in range(len(x)):
             myfile.write(str(x[i]) + " " + str(y[i]) + "\n")
 
+def filewrite_multi_series(parameter_name:str, x, y, second_parameters_name:str, second_parameters_values):
+    file = './log'+FOLDER+'/r_from_' + parameter_name + "_for_" + second_parameters_name + '.txt'
+    with open(file, "w") as myfile:
+        myfile.write(second_parameters_name + " " + " ".join([str(column) for column in second_parameters_values]) + "\n")
+        for i in range(len(x)):
+            myfile.write(str(x[i]) + " " + " ".join([str(column) for column in y[i]]) + "\n")
 
 def calculate_r_from_oscillators_number():
 
@@ -159,11 +165,76 @@ def calculate_r_from_lambda():
     filewrite(parameter_name, x, y)
 
 
+def calculate_r_from_parameter_on_define_system(parameter_name, parameter_series, **kwargs):
+    r_series = []
+    local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
+    local_config_dict['topology'] = TOPOLOGY
+    local_config_dict['lambd'] = 2.
+    local_config_dict['reconnectionProbability'] = 0.15
+    local_config_dict['oscillators_number'] = 100
+    if parameter_name not in local_config_dict.keys():
+        raise ValueError("Wrong parameter_name: {}".format(parameter_name))
+
+    for kwarg_name in kwargs.keys():
+        if kwarg_name in local_config_dict.keys():
+            local_config_dict[kwarg_name] = kwargs[kwarg_name]
+        else:
+            raise ValueError("Wrong config kwarg_name: {}".format(kwarg_name))
+
+    for parameter in parameter_series:
+        local_config_dict[parameter_name] = parameter
+        config = create_config(**local_config_dict)
+        oscillators_number = config['oscillators_number']
+        phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
+        phase_vector[0] = config['phase_vector']
+        pendulum_phase, _ = compute_time_series_for_system_ocl(
+            omega_vector=np.array(config['omega_vector'], dtype=np.float32),
+            lambda_c=config['lambd'],
+            A=np.array(config['Aij'], dtype=np.float32),
+            phase_vector=phase_vector,
+            a=config['t0'],
+            b=config['tf'],
+            oscillators_number=config['oscillators_number'],
+            N_parts=config['N']
+        )
+        r_series.append(compute_last_r(pendulum_phase))
+    global r_from_parameter_config
+    r_from_parameter_config = config
+    parameter_series = np.array(parameter_series)
+    r_series = np.array([i for j in r_series for i in j], dtype=np.float)
+    return r_series
+
+
+def calculate_r_from_lambda_for_oscillators_number():
+    _lambda = np.arange(0.1, 5, 0.01)
+    parameter_name = "lambd"
+    oscillators_number_values = np.arange(100, 1001, 100)
+    r_list = [calculate_r_from_parameter_on_define_system(parameter_name, _lambda, oscillators_number=oscillators_number) for oscillators_number in oscillators_number_values]
+    r_list = np.transpose(r_list)
+    x, y = _lambda, r_list
+    second_parameters_name = "oscillators_number"
+    filewrite_multi_series(parameter_name, x, y, second_parameters_name, oscillators_number_values)
+
+
 
 if __name__ == '__main__':
-    TOPOLOGY = "random"
-    FOLDER = "/random"
+    FOLDER = "/sw"
+    TOPOLOGY = "smallWorld"
+    """
+     "fullyConnected".lower(): 
+        "random".lower(): 
+        "freeScaling".lower(): 
+        "smallWorld".lower(): 
+        "regular".lower():
+        "barbell".lower(): 
+    """
+    calculate_r_from_lambda_for_oscillators_number()
+    FOLDER = "/sf"
+    TOPOLOGY = "freeScaling"
     # calculate_r_from_oscillators_number()
-    calculate_r_from_reconnection_probability()
-    # calculate_r_from_lambda()
+    # calculate_r_from_reconnection_probability()
+    calculate_r_from_lambda_for_oscillators_number()
+    FOLDER = "/regular"
+    TOPOLOGY = "regular"
     # calculate_r_from_topology()
+    calculate_r_from_lambda_for_oscillators_number()
