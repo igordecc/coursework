@@ -270,10 +270,8 @@ def extended_plot(x, y, x_label, y_label, printable_info):
     plt.plot(x, y, "b.")
     # plt.plot(x, smooth_curve,"r")
     f0 = lambda t, a, b, c: a*np.exp(-t*b) + c
-    print(x)
-    print(y)
     optimised_curve, _ = curve_fit(f0,  x,  y, p0=(0.01,1, 0.7))
-    print("optimised_curve", optimised_curve)
+
 
     plt.plot(x, f0(x, *optimised_curve), "m")
     plt.xlabel(x_label)

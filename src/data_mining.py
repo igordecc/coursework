@@ -43,7 +43,7 @@ def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators
     for i in range(time_output_array_length):
         sum_cos = 0
         sum_sin = 0
-        for j in pendulum_phase_output_array[i]:
+        for j in pendulum_phase_output_array[i]:    # FIXX
             sum_cos += math.cos(j)
             sum_sin += math.sin(j)
 
@@ -56,6 +56,35 @@ def compute_r(time_output_array_length, pendulum_phase_output_array, oscillators
             print("CALCULATE R EXCEPTION")
 
     return r
+
+
+def compute_r_without_overhead(time_output_array_length, pendulum_phase_output_array, oscillators_number):
+    """
+    compute r for the end of calculations
+    .*'*-.-*'*-.-*'*-.-*'*-.-*'*-.-*'*-.-*'*-.-*'*-.-*'*-.-*
+    :param time_output_array_length:
+    :param pendulum_phase_output_array:
+    :param oscillators_number:
+    :return:
+    """
+
+    r = 0
+    sum_cos = 0
+    sum_sin = 0
+    for j in pendulum_phase_output_array[-1]:    # FIXED
+        sum_cos += math.cos(j)
+        sum_sin += math.sin(j)
+
+    x = sum_cos/oscillators_number
+    y = sum_sin/oscillators_number
+    try:
+        r = (x**2 + y**2)**0.5
+    except:
+        r = None
+        print("CALCULATE R EXCEPTION")
+
+    return r
+
 
 
 def compute_last_r(series):
@@ -117,12 +146,14 @@ def filewrite(parameter_name:str, x, y):
         for i in range(len(x)):
             myfile.write(str(x[i]) + " " + str(y[i]) + "\n")
 
+
 def filewrite_multi_series(parameter_name:str, x, y, second_parameters_name:str, second_parameters_values):
     file = './log'+FOLDER+'/r_from_' + parameter_name + "_for_" + second_parameters_name + '.txt'
     with open(file, "w") as myfile:
         myfile.write(second_parameters_name + " " + " ".join([str(column) for column in second_parameters_values]) + "\n")
         for i in range(len(x)):
             myfile.write(str(x[i]) + " " + " ".join([str(column) for column in y[i]]) + "\n")
+
 
 def calculate_r_from_oscillators_number():
 
@@ -205,8 +236,7 @@ def calculate_r_from_parameter_on_define_system(parameter_name, parameter_series
     return r_series
 
 
-def calculate_r_from_lambda_for_oscillators_number():
-    _lambda = np.arange(0.1, 5, 0.01)
+def calculate_r_from_lambda_for_oscillators_number(_lambda = np.arange(0.1, 100, 0.4)):
     parameter_name = "lambd"
     oscillators_number_values = np.arange(100, 1001, 100)
     r_list = [calculate_r_from_parameter_on_define_system(parameter_name, _lambda, oscillators_number=oscillators_number) for oscillators_number in oscillators_number_values]
@@ -218,23 +248,31 @@ def calculate_r_from_lambda_for_oscillators_number():
 
 
 if __name__ == '__main__':
-    FOLDER = "/sw"
-    TOPOLOGY = "smallWorld"
-    """
-     "fullyConnected".lower(): 
-        "random".lower(): 
-        "freeScaling".lower(): 
-        "smallWorld".lower(): 
-        "regular".lower():
-        "barbell".lower(): 
-    """
-    calculate_r_from_lambda_for_oscillators_number()
-    FOLDER = "/sf"
-    TOPOLOGY = "freeScaling"
+
+    # """
+    #  "fullyConnected".lower():
+    #     "random".lower():
+    #     "freeScaling".lower():
+    #     "smallWorld".lower():
+    #     "regular".lower():
+    #     "barbell".lower():
+    # """
     # calculate_r_from_oscillators_number()
     # calculate_r_from_reconnection_probability()
-    calculate_r_from_lambda_for_oscillators_number()
-    FOLDER = "/regular"
-    TOPOLOGY = "regular"
     # calculate_r_from_topology()
+
+    # FOLDER = "/sw"
+    # TOPOLOGY = "smallWorld"
+    # calculate_r_from_lambda_for_oscillators_number()
+
+    FOLDER = "/sf"
+    TOPOLOGY = "freeScaling"
     calculate_r_from_lambda_for_oscillators_number()
+
+    # FOLDER = "/regular"
+    # TOPOLOGY = "regular"
+    # calculate_r_from_lambda_for_oscillators_number()
+
+    # FOLDER = "/random"
+    # TOPOLOGY = "random"
+    # calculate_r_from_lambda_for_oscillators_number()
