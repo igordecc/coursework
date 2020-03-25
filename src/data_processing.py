@@ -35,7 +35,7 @@ def isfloat(value):
 #         return columns
 
 
-def read_wordy_file(filename):
+def read_wordy_file(filename, FOLDER = ""):
     """
     read filename and return x,y series ready for plot
     :param filename:
@@ -57,23 +57,23 @@ def plot_data(data, fmt="."):
     plt.show()
 
 
-def save_data_img(data, filename, fmt="."):
+def save_data_img(data, filename, SAVE_FOLDER, fmt="."):
     plt.grid()
     plt.ylabel("r")
     plt.xlabel(filename)
     x = data[0]
     for y in data[1:]:
         plt.plot(x, y, fmt)
-    plt.savefig("./img"+SAVE_FOLDER+"/" + filename + ".png")
+    plt.savefig("./img/"+SAVE_FOLDER+"/" + filename + ".png")
     plt.close()
 
 
-def _path(filename:str):
-    return "./log"+FOLDER+"/r_from_" + filename + ".txt"
+def _path(filename:str, FOLDER:str):
+    return "./log/"+FOLDER+"/" + filename
 
-def read_plot_save(filename):
-    data = read_wordy_file(_path(filename))
-    save_data_img(data, filename)
+def read_plot_save(filename, FOLDER, SAVE_FOLDER, **kwargs):
+    data = read_wordy_file(_path(filename, FOLDER))
+    save_data_img(data, filename, SAVE_FOLDER, **kwargs)
     # plot_data(data)
 
 if __name__ == '__main__':
@@ -84,22 +84,25 @@ if __name__ == '__main__':
         "lambd_for_oscillators_number"   # multigraph
         #"topology"
     ]
-    FOLDER = "/regular"
-    SAVE_FOLDER = FOLDER
-    for filename in FILENAMES:
-        read_plot_save(filename)
+    # FOLDER = "/regular"
+    # SAVE_FOLDER = FOLDER
+    # for filename in FILENAMES:
+    #     read_plot_save(filename)
+    #
+    # FOLDER = "/sf"
+    # SAVE_FOLDER = FOLDER
+    # for filename in FILENAMES:
+    #     read_plot_save(filename)
+    #
+    # FOLDER = "/sw"
+    # SAVE_FOLDER = FOLDER
+    # for filename in FILENAMES:
+    #     read_plot_save(filename)
+    #
+    # FOLDER = "/random"
+    # SAVE_FOLDER = FOLDER
+    # for filename in FILENAMES:
+    #     read_plot_save(filename)
 
-    FOLDER = "/sf"
-    SAVE_FOLDER = FOLDER
-    for filename in FILENAMES:
-        read_plot_save(filename)
+    read_plot_save("r_from_lambd_for_several_oscillators.txt", "sf", "sf")
 
-    FOLDER = "/sw"
-    SAVE_FOLDER = FOLDER
-    for filename in FILENAMES:
-        read_plot_save(filename)
-
-    FOLDER = "/random"
-    SAVE_FOLDER = FOLDER
-    for filename in FILENAMES:
-        read_plot_save(filename)

@@ -254,7 +254,7 @@ def plot_series(x_series, y_series):
     plt.show()
 
 
-def extended_plot(x, y, x_label, y_label, printable_info):
+def extended_plot(x, y, x_label, y_label, printable_info, f0 = lambda t, a, b, c: a*np.exp(-t*b) + c):
     """
     plot with legend and all that stuff
     :return:
@@ -269,7 +269,6 @@ def extended_plot(x, y, x_label, y_label, printable_info):
     smooth_curve = scipy.polyval(coeffs, x)
     plt.plot(x, y, "b.")
     # plt.plot(x, smooth_curve,"r")
-    f0 = lambda t, a, b, c: a*np.exp(-t*b) + c
     optimised_curve, _ = curve_fit(f0,  x,  y, p0=(0.01,1, 0.7))
 
 
@@ -279,6 +278,32 @@ def extended_plot(x, y, x_label, y_label, printable_info):
     # print(printable_info)
     plt.grid()
     plt.show()
+
+
+def aprox_curve_fit(x, y, f0 = lambda t, a, b, c: a * np.exp(-t * b) + c, flag=None):
+    """
+    plot with legend and all that stuff
+    :return:
+    """
+    print("y: ")
+    print(y)
+    print(len(y))
+    print("x: ")
+    print(x)
+    print(len(x))
+    start_time = time.perf_counter()
+    print("time : " + str(time.perf_counter() - start_time))
+
+    from scipy.optimize import curve_fit
+    optimised_curve, _ = curve_fit(f0,  x,  y, p0=(0.01,1, 0.7))
+    y = f0(x, *optimised_curve)
+    return y
+
+def approx_polyfit(x, y):
+    import scipy
+    coeffs = scipy.polyfit(x,y, 3)
+    y = scipy.polyval(coeffs, x)
+    return y
 
 if __name__ == '__main__':
 

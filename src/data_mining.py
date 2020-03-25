@@ -114,9 +114,14 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
     local_config_dict['oscillators_number'] = 100
     if parameter_name not in local_config_dict.keys():
         raise ValueError("Wrong parameter_name: {}".format(parameter_name))
+
+    config = create_config(**local_config_dict)
     for parameter in parameter_series:
-        local_config_dict[parameter_name] = parameter
-        config = create_config(**local_config_dict)
+        if parameter_name != "lambd":
+            local_config_dict[parameter_name] = parameter
+            config = create_config(**local_config_dict)
+        else:
+            local_config_dict[parameter_name] = parameter
         oscillators_number = config['oscillators_number']
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
         phase_vector[0] = config['phase_vector']
@@ -140,15 +145,21 @@ def calculate_r_from_parameter(parameter_name, parameter_series):
 
 # Evaluation time note: osc numbers [100,1000,1]    154 sec for average r   and  129 sec with last r (-20 sec!)
 # ---- application functions
-def filewrite(parameter_name:str, x, y):
-    file = './log'+FOLDER+'/r_from_' + parameter_name + '.txt'
+def filewrite(parameter_name:str, x, y, filename=None):
+    if filename==None:
+        file = './log'+FOLDER+'/r_from_' + parameter_name + '.txt'
+    else:
+        file = './log'+FOLDER+"/"+filename
     with open(file, "w") as myfile:
         for i in range(len(x)):
             myfile.write(str(x[i]) + " " + str(y[i]) + "\n")
 
 
-def filewrite_multi_series(parameter_name:str, x, y, second_parameters_name:str, second_parameters_values):
-    file = './log'+FOLDER+'/r_from_' + parameter_name + "_for_" + second_parameters_name + '.txt'
+def filewrite_multi_series(parameter_name:str, x, y, second_parameters_name:str, second_parameters_values, filename = None):
+    if filename == None:
+        file = './log'+FOLDER+'/r_from_' + parameter_name + "_for_" + second_parameters_name + '.txt'
+    else:
+        file = './log'+FOLDER+'/' + filename
     with open(file, "w") as myfile:
         myfile.write(second_parameters_name + " " + " ".join([str(column) for column in second_parameters_values]) + "\n")
         for i in range(len(x)):
@@ -187,13 +198,10 @@ def calculate_r_from_reconnection_probability():
     filewrite(parameter_name, x, y)
 
 
-def calculate_r_from_lambda():
-
-    _lambda = np.arange(0.1, 5, 0.01)
-
+def calculate_r_from_lambda(_lambda = np.arange(0.1, 5, 0.01), **kwargs):
     parameter_name = "lambd"
     x, y = calculate_r_from_parameter(parameter_name, _lambda)
-    filewrite(parameter_name, x, y)
+    filewrite(parameter_name, x, y, **kwargs)
 
 
 def calculate_r_from_parameter_on_define_system(parameter_name, parameter_series, **kwargs):
@@ -212,6 +220,8 @@ def calculate_r_from_parameter_on_define_system(parameter_name, parameter_series
         else:
             raise ValueError("Wrong config kwarg_name: {}".format(kwarg_name))
 
+
+    # TODO create special function for r from lambda
     for parameter in parameter_series:
         local_config_dict[parameter_name] = parameter
         config = create_config(**local_config_dict)
@@ -236,14 +246,38 @@ def calculate_r_from_parameter_on_define_system(parameter_name, parameter_series
     return r_series
 
 
-def calculate_r_from_lambda_for_oscillators_number(_lambda = np.arange(0.1, 100, 0.4)):
+def calculate_r_from_lambda_for_oscillators_number_approx(_lambda = np.arange(0.1, 20, 0.2), **kwargs):
     parameter_name = "lambd"
-    oscillators_number_values = np.arange(100, 1001, 100)
-    r_list = [calculate_r_from_parameter_on_define_system(parameter_name, _lambda, oscillators_number=oscillators_number) for oscillators_number in oscillators_number_values]
-    r_list = np.transpose(r_list)
+    oscillators_number_values = [100, 1000] #np.arange(100, 301, 100)
+    r_list_c = [calculate_r_from_parameter_on_define_system(parameter_name, _lambda, oscillators_number=oscillators_number) for oscillators_number in oscillators_number_values]
+    r_list = np.transpose(r_list_c)
     x, y = _lambda, r_list
+    # print(r_list_c)
+    # print(r_list_c[0])
+
+    import shell
+    # approx_y = [shell.aprox_curve_fit(x, yi) for yi in r_list_c ]
+    approx_y = np.array([shell.approx_polyfit(x, yi) for yi in r_list_c ], dtype=np.float64)
+
+    # y = np.concatenate([r_list_c, approx_y])
+    y = approx_y
+
+    y = y.transpose()
     second_parameters_name = "oscillators_number"
-    filewrite_multi_series(parameter_name, x, y, second_parameters_name, oscillators_number_values)
+    filewrite_multi_series(parameter_name, x, y, second_parameters_name, oscillators_number_values, **kwargs)
+
+
+def calculate_r_from_lambda_for_oscillators_number(_lambda = np.arange(0.1, 50, 0.2), **kwargs):
+    parameter_name = "lambd"
+    oscillators_number_values = [100,300,500] #np.arange(100, 301, 100)
+    r_list_c = [calculate_r_from_parameter_on_define_system(parameter_name, _lambda, oscillators_number=oscillators_number) for oscillators_number in oscillators_number_values]
+    r_list = np.transpose(r_list_c)
+    x, y = _lambda, r_list
+
+    second_parameters_name = "oscillators_number"
+    filewrite_multi_series(parameter_name, x, y, second_parameters_name, oscillators_number_values, **kwargs)
+
+
 
 
 
@@ -263,16 +297,24 @@ if __name__ == '__main__':
 
     # FOLDER = "/sw"
     # TOPOLOGY = "smallWorld"
-    # calculate_r_from_lambda_for_oscillators_number()
+    # calculate_r_from_lambda_for_oscillators_number_approx()
 
-    FOLDER = "/sf"
-    TOPOLOGY = "freeScaling"
-    calculate_r_from_lambda_for_oscillators_number()
+    # FOLDER = "/sf_20"
+    # TOPOLOGY = "freeScaling"
+    # calculate_r_from_lambda_for_oscillators_number_approx()
 
     # FOLDER = "/regular"
     # TOPOLOGY = "regular"
-    # calculate_r_from_lambda_for_oscillators_number()
+    # calculate_r_from_lambda_for_oscillators_number_approx()
+#----------------
+    from time import perf_counter
+    START_TIME = perf_counter()
+    FOLDER = "/sf"
+    TOPOLOGY = "freeScaling"
+    calculate_r_from_lambda_for_oscillators_number(_lambda = np.arange(0.1, 20, 0.1))
 
-    # FOLDER = "/random"
-    # TOPOLOGY = "random"
-    # calculate_r_from_lambda_for_oscillators_number()
+    from data_processing import read_plot_save
+    read_plot_save("r_from_lambd_for_oscillators_number_20", "sf", "sf")
+    print("calcs done in "+str(perf_counter()-START_TIME))
+
+    # TODO precompute and save start parameters: phase vector, omega vector, Aij connectivity matrix.
