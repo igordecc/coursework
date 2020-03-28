@@ -30,13 +30,17 @@ def write_n_topological_ic(n:int, osc:int, topology:str):
 
     print("complete in {} sec".format(str(perf_counter()-start)))
 
-if __name__ == '__main__':
+def creation_template():
     for osc in range(100, 1001, 100):
         write_n_topological_ic(100, osc=osc, topology="freescaling")
         write_n_topological_ic(100, osc=osc, topology="random")
         write_n_topological_ic(100, osc=osc, topology="smallworld")
-        write_n_topological_ic(100, osc=osc, topology="regular")
         write_n_topological_ic(100, osc=osc, topology="fullyConnected")
 
+
+if __name__ == '__main__':
+    for osc in range(100, 1001, 100):
+        write_n_topological_ic(100, osc=osc, topology="random_sw")
+        write_n_topological_ic(100, osc=osc, topology="regular_sw")
 
 

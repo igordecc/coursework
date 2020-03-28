@@ -39,10 +39,11 @@ def create_config(*args,
 
     topologydict = {
         "fullyConnected".lower(): lambda: networkx.complete_graph(oscillators_number),
-        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, reconnectionProbability),
+        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
+        "random_sw".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, 1),
         "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),
-        "regular".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, 0),
+        "regular_sw".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, 0),
         "barbell".lower(): lambda: networkx.barbell_graph(m1, m2)
     }
     config['topology'] = topologydict[topology.lower()]()
