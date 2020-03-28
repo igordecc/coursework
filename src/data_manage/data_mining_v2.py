@@ -2,6 +2,7 @@
 import numpy as np
 import math
 from main.OCL import compute_time_series_for_system_ocl
+import os
 
 # config preparation
 from config.config_creator import create_config
@@ -98,8 +99,8 @@ def calculate_r_from_lambda(parameter_name, parameter_series, **kwargs):
             N_parts=config['N']
         )
         r_series.append(compute_last_r(pendulum_phase))
-    global r_from_parameter_config
-    r_from_parameter_config = config
+    # global r_from_parameter_config
+    # r_from_parameter_config = config
     if START_TIME:
 
         print(str(config['oscillators_number'])+ " oscillators computed in "+str(perf_counter()-LOCAL_START_TIME)+" sec, total run is "
@@ -123,6 +124,7 @@ def calculate_r_from_lambda_for_oscillators_number(_lambda = np.arange(0.1, 50, 
     second_parameters_name = "oscillators_number"
     filewrite_multi_series(parameter_name, x, y, second_parameters_name, oscillators_number_values, **kwargs)
 
+
 def calculate_r_from_lambda_for_several_oscillators(_lambda = np.arange(0.1, 50, 0.2),
                                                     oscillators_number=100,
                                                     how_many_osc=10,
@@ -141,10 +143,17 @@ def calculate_r_from_lambda_for_several_oscillators(_lambda = np.arange(0.1, 50,
                                         oscillators_number=oscillators_number
                                         ) for oscillators_number in oscillators_number_values]
     r_list_tr = np.transpose(r_list_c)
-    x, y = _lambda, r_list_tr
+
+    y_mean = [[np.mean(itteration),] for itteration in r_list_tr]
+    r_list_tr_plus = y_mean #np.concatenate([y_mean, r_list_tr ], axis=1)
+
+    print(r_list_tr_plus)
+    x, y = _lambda, r_list_tr_plus
 
     second_parameters_name = "several_oscillators"
     filewrite_multi_series(parameter_name, x, y, second_parameters_name, oscillators_number_values, **kwargs)
+    return x, y
+
 
 # file write function
 
@@ -152,22 +161,34 @@ def filewrite_multi_series(parameter_name:str, x, y, second_parameters_name:str,
     """
     Writes multiple series to file
     """
-    if filename == None:
-        file = './log'+FOLDER+'/r_from_' + parameter_name + "_for_" + second_parameters_name + '.txt'
-    else:
-        file = './log'+FOLDER+'/' + filename
-    with open(file, "w") as myfile:
-        myfile.write(second_parameters_name + " " + " ".join([str(column) for column in second_parameters_values]) + "\n")
+
+    if filename is None:
+        filename = "r_from_" + parameter_name + "_for_" + second_parameters_name + '.txt'
+    path = os.path.join('log', FOLDER, filename)
+    with open(path, "w") as f:
+        f.write(second_parameters_name + " " + " ".join([str(column) for column in second_parameters_values]) + "\n")
         for i in range(len(x)):
-            myfile.write(str(x[i]) + " " + " ".join([str(column) for column in y[i]]) + "\n")
+            f.write(str(x[i]) + " " + " ".join([str(column) for column in y[i]]) + "\n")
 
 
 if __name__ == '__main__':
+    # """
+    #  "fullyConnected".lower():
+    #     "random".lower():
+    #     "freeScaling".lower():
+    #     "smallWorld".lower():
+    #     "regular".lower():
+    #     "barbell".lower():
+    # """
     from time import perf_counter
 
     START_TIME = perf_counter()
 
-    FOLDER = "/sf"
-    TOPOLOGY = "freeScaling"
-    calculate_r_from_lambda_for_several_oscillators(_lambda=np.arange(0.1, 20, 0.1))
+    FOLDER = "regular"
+    TOPOLOGY = "regular"
+    x,y = calculate_r_from_lambda_for_several_oscillators(_lambda=np.arange(0.1, 20, 1), filename="r_from_lambd_mean.txt")
     print("calcs done in " + str(perf_counter() - START_TIME))
+
+    from data_processing import read_plot_save
+    read_plot_save("r_from_lambd_mean.txt", FOLDER, FOLDER)
+

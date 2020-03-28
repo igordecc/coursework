@@ -104,5 +104,5 @@ if __name__ == '__main__':
     # for filename in FILENAMES:
     #     read_plot_save(filename)
 
-    read_plot_save("r_from_lambd_for_several_oscillators.txt", "sf", "sf")
+    read_plot_save("r_from_lambd_for_several_oscillators_with_mean.txt", "regular", "regular")
 
