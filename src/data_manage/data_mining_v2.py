@@ -11,34 +11,6 @@ DEFAULT_CONFIG_PARAMETERS_DICT = create_config.__kwdefaults__
 FOLDER = "/sf"
 TOPOLOGY = "freeScaling"
 
-# --------- smallest unit for data mining
-def compute_system_ocl(*args, osc_min=5, osc_max=6, osc_step=10):
-
-    #local_config_dict.update(compute_system_ocl.__kwdefaults__)
-    for oscillators_number in np.arange(osc_min, osc_max, osc_step):
-        local_config_dict = DEFAULT_CONFIG_PARAMETERS_DICT.copy()
-        local_config_dict.update({"oscillators_number": oscillators_number})
-        config = create_config(**local_config_dict)
-
-        phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
-        phase_vector[0] = config['phase_vector']
-
-        omega_vector = np.array(config['omega_vector'], dtype=np.float32)
-        Aij = np.array(config['Aij'], dtype=np.float32)
-
-        pendulum_phase_output_array, pendulum_time_output_array = compute_time_series_for_system_ocl(omega_vector,
-                                                                                                     config['lambd'],
-                                                                                                     Aij,
-                                                                                                     phase_vector,
-                                                                                                     a=config['t0'],
-                                                                                                     b=config['tf'],
-                                                                                                     oscillators_number=config['oscillators_number'],
-                                                                                                     N_parts=config['N'])
-        pendulum_phase_output_array = np.transpose(np.array(pendulum_phase_output_array))
-        return pendulum_phase_output_array
-
-
-
 # ----- compute loops -- and -- post processing
 def compute_last_r(osc_phase_series):
     sum_sin = 0
