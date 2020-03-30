@@ -14,6 +14,7 @@ def create_config(*args,
                   filename=None,
                   topology="fullyConnected",
                   reconnectionProbability=0.15,
+                  ageCreationProb = 0.3,
                   neighbours=10,
                   community_number_to_detect=None):
     """
@@ -39,7 +40,7 @@ def create_config(*args,
 
     topologydict = {
         "fullyConnected".lower(): lambda: networkx.complete_graph(oscillators_number),
-        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number),
+        "random".lower(): lambda: networkx.fast_gnp_random_graph(oscillators_number, ageCreationProb),
         "freeScaling".lower(): lambda: networkx.scale_free_graph(oscillators_number),
         "random_sw".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, 1),
         "smallWorld".lower(): lambda: networkx.watts_strogatz_graph(oscillators_number, neighbours, reconnectionProbability),

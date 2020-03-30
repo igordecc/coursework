@@ -119,7 +119,21 @@ def create_dir(path):
         print("dir '{}' already exist".format(dir))
 
 
-def experiment(topology="freescaling", n_sys=10, osc_n=100, min_l=0, max_l=10, dl=1):
+def save_img(x, y, img_path, fmt="."):
+    plt.plot(x, y, fmt)
+    plt.grid()
+    create_dir(img_path)
+    plt.savefig(img_path)
+    plt.close()
+
+def save_log(x, y, log_path):
+    create_dir(log_path)
+
+    with open(log_path, "wb") as file:
+        pickle.dump((x, y), file)
+
+
+def experiment(topology="freescaling", n_sys=10, osc_n=100, min_l=0, max_l=10, dl=1., n_sys_start=0):
     """
     Find mean line for n different realisations. Saves log and img in corresponding folders. Returns paths to log and
     img.
@@ -135,41 +149,48 @@ def experiment(topology="freescaling", n_sys=10, osc_n=100, min_l=0, max_l=10, d
     kwarg_dict["oscillators_number"] = osc_n
     kwarg_dict["lambda_vector"] = np.arange(min_l, max_l, dl)
     kwarg_dict["topology"] = topology.lower()   # do not touch .lower()  !!!
-    kwarg_dict["files"] = ["ic\\{0}{1}_{2}".format(kwarg_dict["topology"], kwarg_dict["oscillators_number"], i) for i in range(n_sys)]
+    kwarg_dict["files"] = ["ic\\{0}{1}_{2}".format(kwarg_dict["topology"],
+                                                   kwarg_dict["oscillators_number"],
+                                                   i
+                                                   )
+                           for i in range(n_sys_start, n_sys)]
 
     r_mean = r_from_lambda_mean(**kwarg_dict)
 
-    plt.plot(kwarg_dict["lambda_vector"], r_mean, ".")
-    plt.grid()
-    img_path = "{2}\\{1}\\r_from_lambd_mean_{0}".format(kwarg_dict["oscillators_number"], kwarg_dict["topology"], "img")
-    log_path = "{2}\\{1}\\r_from_lambd_mean_{0}".format(kwarg_dict["oscillators_number"], kwarg_dict["topology"], "log")
+    dl_power = abs(int(np.log10(dl)))
+    print("dl_power {}".format(dl_power))
 
-    create_dir(img_path)
-    create_dir(log_path)
-    plt.savefig(img_path)
-    plt.close()
+    unit_path = lambda type: "{2}\\{1}\\r_from_lambd_mean_{0}_{3}".format(kwarg_dict["oscillators_number"], kwarg_dict["topology"], type,
+                                                   dl_power)
+    img_path = unit_path("img")
+    save_img(kwarg_dict["lambda_vector"], r_mean, img_path)
 
-    with open(log_path, "wb") as file:
-        pickle.dump((kwarg_dict["lambda_vector"], r_mean), file)
+    log_path = unit_path("log")
+    save_log(kwarg_dict["lambda_vector"], r_mean, log_path)
 
     return img_path, log_path
 
 # ----------------
 def experiment_pattern():
-    experiment(topology="random_sw",      n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1)
-    experiment(topology="smallWorld",     n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1)
-    experiment(topology="regular_sw",     n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1)
+    experiment(topology="random_sw",      n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1, n_sys_start=0)
+    experiment(topology="smallWorld",     n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1, n_sys_start=0)
+    experiment(topology="regular_sw",     n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1, n_sys_start=0)
 
-    experiment(topology="freescaling",    n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1)
-    experiment(topology="random",         n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1)
-    experiment(topology="fullyConnected", n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1)
+    experiment(topology="freescaling",    n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1, n_sys_start=0)
+    experiment(topology="random",         n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1, n_sys_start=0)
+    experiment(topology="fullyConnected", n_sys =10, osc_n=100, min_l=0, max_l=10, dl=1, n_sys_start=0)
 
 
 def experiment_sw1():
-    for i in [100]:
-        experiment(topology="random_sw",  n_sys=20, osc_n=i, min_l=0, max_l=40, dl=1)
-        experiment(topology="smallWorld", n_sys=20, osc_n=i, min_l=0, max_l=40, dl=1)
-        experiment(topology="regular_sw", n_sys=20, osc_n=i, min_l=0, max_l=40, dl=1)
+    osc_n_list = range(100, 501, 50)
+    for i in osc_n_list:
+        experiment(topology="freescaling",    n_sys=20, osc_n=i, min_l=0, max_l=100, dl=0.1, n_sys_start=0)
+        # experiment(topology="random",         n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
+        # experiment(topology="fullyConnected", n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
+
+        # experiment(topology="fullyConnected",  n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
+        # experiment(topology="smallWorld", n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
+        # experiment(topology="regular_sw", n_sys=20, osc_n=i, min_l=0, max_l=40, dl=0.01, n_sys_start=0)
 
 
 if __name__ == '__main__':

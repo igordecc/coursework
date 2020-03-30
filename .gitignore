@@ -5,4 +5,6 @@
 .cache
 .idea/
 ic/
+log/
+img/
 __pycache__
