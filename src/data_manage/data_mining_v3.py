@@ -59,10 +59,13 @@ def r_from_lambda(lambda_vector, **kwargs):
         #   raise  ValueError("Wrong config kwarg_name: {}".format(kwarg_name))
 
     config = create_config(**local_config_dict)
+    print(" base config {0:.4f} sec".format(perf_counter()-LOCAL_START_TIME))
     for lambd in lambda_vector:
+        local_timer = perf_counter()
         oscillators_number = config['oscillators_number']
         phase_vector = np.zeros((config['N'], oscillators_number), dtype=np.float32)
         phase_vector[0] = config['phase_vector']
+        print("  custom config {0:.6f} sec".format(perf_counter()-local_timer))
         pendulum_phase, _ = compute_time_series_for_system_ocl(
             omega_vector=np.array(config['omega_vector'], dtype=np.float32),
             lambda_c=lambd,
@@ -75,15 +78,18 @@ def r_from_lambda(lambda_vector, **kwargs):
         )
         r_series.append(compute_last_r(pendulum_phase))
 
-    print(str(config['oscillators_number'])+ " oscillators computed in "+str(perf_counter()-LOCAL_START_TIME))
+    print("{0} oscillators: {1:.2f} sec   ".format(config['oscillators_number'], perf_counter()-LOCAL_START_TIME))
     return r_series
 
 
 # ====================================
 def read_file(path):
+    local_time = perf_counter()
     import pickle
     with open(path, "rb") as file:
+        print(" read: {0:.4f} sec".format(perf_counter()-local_time))
         return pickle.load(file)
+
 
 
 def r_from_lambda_mean(files:list, lambda_vector, **kwargs):
@@ -97,11 +103,9 @@ def r_from_lambda_mean(files:list, lambda_vector, **kwargs):
     LOCAL_START_TIME = perf_counter()
     r_vectors = []
     for file in files:
-        time_one_system = perf_counter()
         Aij, phase_vector, omega_vector = read_file(file)
         kwargs['Aij'], kwargs['phase_vector'], kwargs['omega_vector'] = Aij, phase_vector, omega_vector
-        r_vectors.append( r_from_lambda(lambda_vector, **kwargs))
-        print(" unit system: {:.2f} sec".format(perf_counter() - time_one_system))
+        r_vectors.append(r_from_lambda(lambda_vector, **kwargs))
 
     r_mean_vector =np.array(r_vectors).mean(axis=0)
     print(r_mean_vector)
@@ -145,6 +149,7 @@ def experiment(topology="freescaling", n_sys=10, osc_n=100, min_l=0, max_l=10, d
     :param dl: delta lambda
     :return: img_path, log_path
     """
+    print("topology {0}".format(topology))
     kwarg_dict = {}
     kwarg_dict["oscillators_number"] = osc_n
     kwarg_dict["lambda_vector"] = np.arange(min_l, max_l, dl)
@@ -182,11 +187,11 @@ def experiment_pattern():
 
 
 def experiment_sw1():
-    osc_n_list = range(100, 501, 50)
+    osc_n_list = range(100, 101, 200)
     for i in osc_n_list:
-        experiment(topology="freescaling",    n_sys=20, osc_n=i, min_l=0, max_l=100, dl=0.1, n_sys_start=0)
-        # experiment(topology="random",         n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
-        # experiment(topology="fullyConnected", n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
+        # experiment(topology="freescaling",    n_sys=20, osc_n=i, min_l=0, max_l=100, dl=0.1, n_sys_start=0)
+        # experiment(topology="random",         n_sys=20, osc_n=i, min_l=0, max_l=2, dl=0.01, n_sys_start=0)
+        experiment(topology="fullyConnected", n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
 
         # experiment(topology="fullyConnected",  n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)
         # experiment(topology="smallWorld", n_sys=20, osc_n=i, min_l=0, max_l=30, dl=0.1, n_sys_start=0)

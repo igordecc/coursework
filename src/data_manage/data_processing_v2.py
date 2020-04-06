@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # experiment_r_l_multi(topology="smallworld", fmt='-')
     # experiment_r_l_multi(topology="regular_sw", fmt='-')
     experiment_r_l_multi(topology="free_scale" , fmt='-')
-    experiment_r_l_multi(topology="fullyconnected" , fmt='-')
+    # experiment_r_l_multi(topology="fullyconnected" , fmt='-')
     #
     # experiment_crit_lambd()
 

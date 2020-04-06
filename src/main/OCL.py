@@ -84,6 +84,6 @@ def compute_time_series_for_system_ocl(omega_vector, lambda_c, A, phase_vector, 
 
 
     time_queue = perf_counter() - time_queue
-    # print(time_queue)
+    print("  GPU {0:.6f} sec".format(time_queue))
     return phase_vector, time_queue
 

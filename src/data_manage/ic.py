@@ -39,11 +39,11 @@ def creation_template():
 
 
 if __name__ == '__main__':
-    n_sys = 100
-    for osc in range(550, 1001, 100):
+    n_sys = 20
+    for osc in range(10000, 10001, 100):
         # write_n_topological_ic(n_sys, osc=osc, topology="freescaling")
-        # write_n_topological_ic(n_sys, osc=osc, topology="random")
-        # write_n_topological_ic(n_sys, osc=osc, topology="fullyConnected")
+        write_n_topological_ic(n_sys, osc=osc, topology="random")
+        write_n_topological_ic(n_sys, osc=osc, topology="fullyConnected")
         write_n_topological_ic(n_sys, osc=osc, topology="smallworld")
         write_n_topological_ic(n_sys, osc=osc, topology="random_sw")
         write_n_topological_ic(n_sys, osc=osc, topology="regular_sw")

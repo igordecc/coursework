@@ -20,7 +20,7 @@ def read_systems(topology="regular_sw", dl=1, list_osc_n= range(100, 501, 100)):
 
 #====================
 def cut_the_end(x,y, start_from_l=5):
-    x = x[x<=start_from_l]
+    x = x[x<start_from_l]
     y = [yi[:len(x)] for yi in y]
     return x,y
 
@@ -42,7 +42,6 @@ def r_l_multi(topology="smallworld", dl=1, fmt=".", max_l=None):
     plt.close()
 
 if __name__ == '__main__':
-
-    # r_l_multi(topology="freeScaling", dl=1, fmt="-")
-    r_l_multi(topology="fullyconnected", dl=1, fmt="-", max_l=3)
-    r_l_multi(topology="random",         dl=1, fmt="-", max_l=3)
+    r_l_multi(topology="freeScaling", dl=1, fmt="-", max_l=30)
+    # r_l_multi(topology="fullyconnected", dl=1, fmt="-", max_l=3)
+    # r_l_multi(topology="random",         dl=1, fmt="-", max_l=3)
