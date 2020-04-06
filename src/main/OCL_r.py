@@ -1,118 +1,129 @@
+import numpy
 import pyopencl as cl
-import numpy as np
-from time import perf_counter
 
-kernel_src_main = """
-kernel void  kuramoto_equation(
-    const float h,
-    const int N,
+
+KERNEL_SRC = """
+kernel void kuramoto_equation(
+    const float step,
     const global float* lambda,
-    const global float* omega_vector,
+    const global float* omega,
     const global float* A, 
-    const global float* phase_vector, 
-    global float* vector_s,
+    const global float* phase,
     global float* vector_transformed
-    )
-{
+) {
     const int system_id = get_global_id(0);
-    const int id = get_global_id(1);
-    
-    A += id*N;
+    const int oscillator_id = get_global_id(1); 
+    const int N = get_global_size(1);
+
+    phase += system_id*N;
+    A += oscillator_id*N;
+
     float summ = 0;
 
-    for (int j = 0; j < N; ++j)
-    {
-        summ += A[j] * sin( phase_vector[system_id*N + j] - phase_vector[system_id*N + j] ); 
+    for (int j = 0; j < N; ++j) {
+        summ += A[j] * sin(phase[j] - phase[oscillator_id]); 
     }
-    summ = lambda[system_id]*summ/N + omega_vector[system_id*N + id];
 
-    summ = phase_vector[system_id*N + id] + summ * h;
-    vector_transformed[system_id*N + id] = summ;
-    vector_s[system_id*N + id] = sin( fmod(summ,  2*M_PI_F) );
-        
-}"""
+    summ = lambda[system_id]*summ / N + omega[oscillator_id];
+    summ = phase[oscillator_id] + summ * step;
 
+    vector_transformed[system_id*N + oscillator_id] = summ;
+}
 
-def compute_last_time_series_for_multiple_systems_with_ocl(omega_vector, lambda_c, A, phase_vector_2d, kernel_src=kernel_src_main, a=0, b=200, n_systems=None, n_oscillators=16 * 10000000, N_parts=2000):
-    h = abs(a - b) / N_parts
+kernel void transform_result(
+    const int n_osc, 
+    const global float* result,
+    global float* final_result
+) {
+    const int id = get_global_id(0);
 
-    platformsNum = 0  # определяем объект устройства (девайса)
-    deviceNum = 0
+    result += id*n_osc;
 
-    if n_systems==None:
-        n_systems = len(phase_vector_2d[0])
-    # print("platforms --")
-    # print(cl.get_platforms())
-    # print(cl.get_platforms()[platformsNum])
-    # print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum])
-    # print("devices ------")
-    # print(cl.device_type)
-    # print(cl.device_type.GPU)
-    # print(cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU))
+    float sum_cos = 0;
+    float sum_sin = 0;
 
-    device = cl.get_platforms()[platformsNum].get_devices(cl.device_type.GPU)[deviceNum]
+    for (int i = 0; i < n_osc; ++i) {
+        const float norm = sin(fmod(result[i], 2*M_PI_F));
+        sum_cos += cos(norm);
+        sum_sin += sin(norm);
+    }
 
-    context = cl.Context(devices=[device])  # , dev_type=None     #создаём контекст и очередь
-    queue = cl.CommandQueue(context)  # ,properties=cl.command_queue_properties.PROFILING_ENABLE)
+    const float x = sum_cos / n_osc;
+    const float y = sum_sin / n_osc;
 
-    program = cl.Program(context, kernel_src).build('-cl-std=CL2.0')  # создаём программу
+    final_result[id] = sqrt(x*x + y*y);
+}
 
-    kernel = cl.Kernel(program, name='kuramoto_equation')  # создаём кернель
-
-    phase_vector_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=phase_vector_2d[0])
-
-    omega_vector_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=omega_vector)
-
-    lambda_c_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=lambda_c)
-
-    A_buffer = cl.Buffer(context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=A)
+"""
 
 
-    out_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=phase_vector_2d[0])  # size - size of buffer
+def as_cl_buffer(ctx, arr, flags=cl.mem_flags.READ_ONLY):
+    if isinstance(arr, cl.Buffer):
+        return arr
+    elif isinstance(arr, numpy.ndarray):
+        return cl.Buffer(ctx, flags | cl.mem_flags.COPY_HOST_PTR, hostbuf=arr)
+    else:
+        raise TypeError(f"{type(arr)} cannot be converted to cl.Buffer")
 
-    temp_out_buffer = cl.Buffer(context, cl.mem_flags.WRITE_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=phase_vector_2d[0])  # size - size of buffer
 
-    # new_phase_vector = np.shape(phase_vector_2d.shape)
-    time_queue = perf_counter()
-    for i in range(N_parts):
-        event = kernel(queue, [n_systems, n_oscillators, ], None,  # oscillators number 1d -> 2d [system number; oscillators number] # global size 0 global size 1
-                       np.float32(h),
-                       np.int32(n_oscillators),
-                       lambda_c_buffer,
-                       omega_vector_buffer,
-                       A_buffer,
-                       phase_vector_buffer,
-                       out_buffer,
-                       temp_out_buffer
-                       )
+class KuramotoSystem:
 
-        cl.enqueue_copy(queue, phase_vector_buffer, temp_out_buffer)
-    cl.enqueue_copy(queue, phase_vector_2d[-1], out_buffer)
+    def __init__(self, platform_id=0, device_id=0):
+        device = cl.get_platforms()[platform_id].get_devices(cl.device_type.GPU)[device_id]
 
-    time_queue = perf_counter() - time_queue
-    # print(time_queue)
-    return phase_vector_2d, time_queue
+        self.context = cl.Context(devices=[device])
+        self.queue = cl.CommandQueue(self.context)
+        self.program = cl.Program(self.context, KERNEL_SRC).build(options=['-cl-std=CL2.0'])
+        self._solve = cl.Kernel(self.program, name='kuramoto_equation')
+        self._transform_result = cl.Kernel(self.program, name='transform_result')
+
+    def _solve_multiple(self, step: float, iterations: int, n_systems: int, n_oscillators: int,
+                        omega: cl.Buffer, phase: cl.Buffer, adjacency: cl.Buffer, lambdas: cl.Buffer):
+        phase_size = phase.get_info(cl.mem_info.SIZE)
+        phase2_buf = cl.Buffer(self.context, cl.mem_flags.READ_WRITE, size=phase_size)
+
+        for _ in range(iterations):
+            self._solve(
+                self.queue, (n_systems, n_oscillators), None,
+                numpy.float32(step),
+                lambdas,
+                omega,
+                adjacency,
+                phase,
+                phase2_buf
+            )
+
+            phase, phase2_buf = phase2_buf, phase
+
+        phase_out = numpy.empty((n_systems,), dtype=numpy.float32)
+        phase_out_buf = cl.Buffer(self.context, cl.mem_flags.WRITE_ONLY, size=phase_out.nbytes)
+
+        self._transform_result(
+            self.queue, (n_systems,), None,
+            numpy.int32(n_oscillators),
+            phase,
+            phase_out_buf
+        )
+
+        cl.enqueue_copy(self.queue, phase_out, phase_out_buf)
+
+        return phase_out
+
+    def solve_multiple(self, step: float, iterations: int, phase: numpy.ndarray, omega, adjacency, lambdas):
+        n_systems, n_oscillators = len(lambdas), len(phase)
+
+        phase = numpy.tile(phase, n_systems)
+        phase_buf = cl.Buffer(self.context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=phase)
+
+        omega_buf = as_cl_buffer(self.context, omega)
+        lambdas_buf = as_cl_buffer(self.context, lambdas)
+        adjacency_buf = as_cl_buffer(self.context, adjacency)
+
+        return self._solve_multiple(
+            step, iterations, n_systems, n_oscillators,
+            omega_buf, phase_buf, adjacency_buf, lambdas_buf
+        )
 
 
 if __name__ == '__main__':
-    from config_creator import create_config
-    oscillators_number = 100
-    lambda_bounds = np.arange(0.1, 100, 0.1)    # 8 GB
-    systems_amount = lambda_bounds.__len__()
-    multi_config_list = [ create_config(oscillators_number=oscillators_number, filename=None) for _lambda in lambda_bounds]
-    N_iterations_amount = multi_config_list[0]['N']
-    phase_vector_2d = np.array([[config['phase_vector'] for config in multi_config_list], ])
-    omega_vector_2d = np.array([config['omega_vector'] for config in multi_config_list])
-    Aij = np.array([config['Aij'] for config in multi_config_list])
-
-    x = compute_last_time_series_for_multiple_systems_with_ocl(omega_vector_2d,
-                                                               lambda_bounds,
-                                                               Aij,
-                                                               phase_vector_2d,
-                                                               kernel_src=kernel_src_main,
-                                                               a=0,
-                                                               b=200,
-                                                               n_systems=systems_amount,
-                                                               n_oscillators=oscillators_number,
-                                                               N_parts=N_iterations_amount)
-    print(x)
+    KuramotoSystem()

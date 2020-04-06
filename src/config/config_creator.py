@@ -1,22 +1,29 @@
-import random
 import configparser
+import os
+import random
+import pickle
+
+import numpy
+
 import networkx
-from matplotlib import pyplot
 import networkx.algorithms.community as community
 
+from matplotlib import pyplot
 
-def create_config(*args,
-                  lambd=0.7,
-                  oscillators_number=10,
-                  start_time=0,
-                  final_time=100,
-                  iteration_number=200,
-                  filename=None,
-                  topology="fullyConnected",
-                  reconnectionProbability=0.15,
-                  ageCreationProb = 0.3,
-                  neighbours=10,
-                  community_number_to_detect=None):
+
+def create_config(
+        lambd=0.7,
+        oscillators_number=10,
+        start_time=0,
+        final_time=100,
+        iteration_number=200,
+        filename=None,
+        topology="fullyConnected",
+        reconnectionProbability=0.15,
+        ageCreationProb = 0.3,
+        neighbours=10,
+        community_number_to_detect=None
+):
     """
     create config of the graph
     :param lambd: special parameter
@@ -31,7 +38,10 @@ def create_config(*args,
     config = {}
     config['oscillators_number'] = oscillators_number
     config['lambd'] = lambd
-    config['omega_vector'] = [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)]
+    config['omega_vector'] = numpy.array(
+        [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)], 
+        dtype=numpy.float32
+    )
 
     m2 = 2 # must be even
     # precalculations for barbell_graph
@@ -48,8 +58,11 @@ def create_config(*args,
         "barbell".lower(): lambda: networkx.barbell_graph(m1, m2)
     }
     config['topology'] = topologydict[topology.lower()]()
-    config['Aij'] = networkx.to_numpy_array(config['topology'])
-    config['phase_vector'] = [round(random.uniform(0, 12), 2) for i in range(oscillators_number)]
+    config['Aij'] = networkx.to_numpy_array(config['topology'], dtype=numpy.float32)
+    config['phase_vector'] = numpy.array(
+        [round(random.uniform(0, 12), 2) for i in range(oscillators_number)],
+        dtype=numpy.float32
+    )
     config['t0'] = start_time
     config['tf'] = final_time
     config['N'] = iteration_number  #iteration count
@@ -70,6 +83,80 @@ def create_config(*args,
             config_root.write(myfile)
 
     return config
+
+
+TOPOLOGIES = {
+    "fully_connected": networkx.complete_graph,
+    "random": networkx.fast_gnp_random_graph,
+    "free_scaling": networkx.scale_free_graph,
+    "random_sw": lambda **kwargs: networkx.watts_strogatz_graph(p=1.0, **kwargs),
+    "regular_sw": lambda **kwargs: networkx.watts_strogatz_graph(p=0.0, **kwargs),
+    "small_world": networkx.watts_strogatz_graph,
+    "barbell": lambda **kwargs: networkx.barbell_graph(m1=kwargs["n"] // 2 - 1, m2=2)
+}
+
+
+def create_topology(topology, **kwargs):
+    generator = TOPOLOGIES.get(topology)
+    if generator is None:
+        raise ValueError(f"Topology '{topology}' is not recognized")
+    return generator(**kwargs)
+
+
+class NetworkConfig:
+
+    def __init__(self, **properties):
+        self._properties = properties.copy()
+
+        self.topology = properties.pop("topology")
+
+        self.adjacency = networkx.to_numpy_array(
+            create_topology(self.topology, **properties), 
+            dtype=numpy.float32
+        )
+
+        self.omega = numpy.array([
+            round(random.uniform(0.05, 0.2), 2)
+            for i in range(properties['n'])
+        ], dtype=numpy.float32)
+
+        self.phase = numpy.array([
+            round(random.uniform(0, 12), 2) 
+            for i in range(properties['n'])
+        ], dtype=numpy.float32)
+
+    def properties(self):
+        return self._properties
+
+    def save(self, path):
+        with open(path, "wb") as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(path):
+        with open(path, "rb") as f:
+            instance = pickle.load(f)
+            if not isinstance(instance, NetworkConfig):
+                raise TypeError(f"Wrong type loaded from pickle! Loaded {type(instance)} expected {NetworkConfig}")
+            return instance
+
+    @staticmethod
+    def create_or_load(path, **properties):
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                raise ValueError(f"{path} is a directory!")
+            config = NetworkConfig.load(path)
+
+            if config.properties() != properties:
+                raise ValueError(
+                    f"Loaded NetworkConfig with different state! Requested: {properties}, got: {config.properties()}"
+                )
+        else:
+            config = NetworkConfig(**properties)
+            config.save(path)
+        
+        return config
+
 
 if __name__=="__main__":
     oscillators_number = 10
