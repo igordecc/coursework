@@ -106,11 +106,14 @@ def experiment_multigraph(folder_name, topology, dl=1, fmt=".", max_l=None):
     osc_boundaries = list( range(100, 501, 50) )
 
     if max_l:
-        plots = [cut_the_right_side_of_x(*read_system(folder_name, topology=topology, osc_n=osc_n, dl=1, ), start_from_l=max_l) for osc_n in osc_boundaries]
+        plots = [cut_the_right_side_of_x(*read_system(folder_name, topology=topology, osc_n=osc_n, dl=dl, ),
+                                         start_from_l=max_l
+                                         )
+                 for osc_n in osc_boundaries]
     else:
-        plots = [read_system(folder_name, topology=topology, osc_n=osc_n, dl=1, ) for osc_n in osc_boundaries]
+        plots = [read_system(folder_name, topology=topology, osc_n=osc_n, dl=dl, ) for osc_n in osc_boundaries]
 
-    img_path = os.path.join(folder_name, "plots", topology, "multigraph")
+    img_path = os.path.join(folder_name, "plots", topology, "".join(f"multigraph_{dl}"))
     plot_multigraph(plots, xlable="lambda", ylable="r", img_path=img_path, legend=[f"{osc} osc" for osc in osc_boundaries])
 
 
@@ -128,8 +131,8 @@ def experiment_critical_multigraph():
 
 if __name__ == '__main__':
 
-    # experiment_multigraph("experiment", topology="small_world", dl=1, fmt="-", max_l=30)
+    experiment_multigraph("experiment", topology="random", dl=2, fmt="-", max_l=30)
     # experiment_critical_lambda( list(range(100, 501, 50)) , topology="small_world")
 
 
-    experiment_critical_multigraph()
+    # experiment_critical_multigraph()

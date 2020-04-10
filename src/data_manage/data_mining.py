@@ -87,8 +87,8 @@ def main():
     for i in osc_n_list:
         r_mean_experiment(
             working_dir, solver, 
-            network_properties=dict(topology="free_scaling", n=i, ),
-            min_lambda=0, max_lambda=30, step_lambda=0.1,
+            network_properties=dict(topology="random", n=i, p=0.3),
+            min_lambda=0, max_lambda=2, step_lambda=0.01,
             n_networks=20
         )
 
