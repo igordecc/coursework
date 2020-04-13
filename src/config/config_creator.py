@@ -38,8 +38,12 @@ def create_config(
     config = {}
     config['oscillators_number'] = oscillators_number
     config['lambd'] = lambd
+    # config['omega_vector'] = numpy.array(
+    #     [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)],
+    #     dtype=numpy.float32
+    # )
     config['omega_vector'] = numpy.array(
-        [round(random.uniform(0.05, 0.2), 2) for i in range(oscillators_number)], 
+        [round(random.normalvariate(0, 1), 2) for i in range(oscillators_number)],
         dtype=numpy.float32
     )
 
