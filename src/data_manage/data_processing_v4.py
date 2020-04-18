@@ -100,4 +100,4 @@ def experiment_crit_lambd():
 
 if __name__ == '__main__':
 
-    experiment_multigraph("exp1", topology="small_world", dl=1, fmt="-", max_l=30)
+    experiment_multigraph("exp1", topology="freescalling", dl=1, fmt="-", max_l=30)
