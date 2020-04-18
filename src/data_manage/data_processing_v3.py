@@ -8,6 +8,7 @@ def file_read(path):
     if os.path.exists(path):
         with open(path, "rb") as file:
             return pickle.load(file)
+
 def log_to_data(osc_n, topology, dl):
     path = "{2}\\{1}\\r_from_lambd_mean_{0}_{3}".format(osc_n, topology, "log", dl)
     return file_read(path)
@@ -42,6 +43,6 @@ def r_l_multi(topology="smallworld", dl=1, fmt=".", max_l=None):
     plt.close()
 
 if __name__ == '__main__':
-    r_l_multi(topology="freeScaling", dl=1, fmt="-", max_l=30)
-    # r_l_multi(topology="fullyconnected", dl=1, fmt="-", max_l=3)
-    # r_l_multi(topology="random",         dl=1, fmt="-", max_l=3)
+    r_l_multi(topology="smallworld", dl=1, fmt="-", max_l=30)
+    # experiment_multigraph(topology="fullyconnected", dl=1, fmt="-", max_l=3)
+    # experiment_multigraph(topology="random",         dl=1, fmt="-", max_l=3)

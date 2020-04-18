@@ -80,9 +80,9 @@ def r_mean_experiment(
 
 
 def main():
-    working_dir = "ya daun"
+    working_dir = "exp1"
     solver = KuramotoSystem()
-    osc_n_list = range(100, 100 + 1, 50)
+    osc_n_list = range(100, 500 + 1, 50)
 
     for i in osc_n_list:
         r_mean_experiment(
