@@ -2,9 +2,9 @@
 *.png
 *.doc
 *.ini
+*.pickle
 .cache
 .idea/
-.pickle
 ic/
 log/
 img/
