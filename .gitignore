@@ -4,6 +4,7 @@
 *.ini
 .cache
 .idea/
+.pickle
 ic/
 log/
 img/
