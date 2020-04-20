@@ -34,14 +34,20 @@ def cut_the_right_side_of_x(x, y,*args, start_from_l=5):
 # ====================
 
 
-def plot_multigraph(plots, xlable:str, ylable:str, img_path:str, fmt=""):
+def plot_multigraph(plots, xlable:str, ylable:str, img_path:str, fmt="", legend=None, **kwargs):
     """
     plot multiple graphs
     :param plots: (x,y), (x,y), (x,y)
     :return:
     """
-    for plot in plots:
-        plt.plot(*plot, fmt)
+    if legend:
+        for i, plot in enumerate(plots):
+            plt.plot(*plot, fmt, label=legend[i], **kwargs)
+            plt.legend()
+    else:
+        for i, plot in enumerate(plots):
+            plt.plot(*plot, fmt, **kwargs)
+
     plt.grid()
     plt.xlabel(xlable)
     plt.ylabel(ylable)
@@ -91,6 +97,7 @@ def experiment_critical_lambda(
     plot_plot((osc_boundaries, lambdas_critical), xlable="oscillator number", ylable="lambda_critical", img_path=img_path, fmt=".-")
     return (osc_boundaries, lambdas_critical)
 
+
 def experiment_multigraph(folder_name, topology, dl=1, fmt=".", max_l=None):
     """
     Plot multiple r(lambda) series on a figure. Then save in the folder_name/plots/topology
@@ -104,10 +111,25 @@ def experiment_multigraph(folder_name, topology, dl=1, fmt=".", max_l=None):
         plots = [read_system(folder_name, topology=topology, osc_n=osc_n, dl=1, ) for osc_n in osc_boundaries]
 
     img_path = os.path.join(folder_name, "plots", topology, "multigraph")
-    plot_multigraph(plots, xlable="lambda", ylable="r", img_path=img_path)
+    plot_multigraph(plots, xlable="lambda", ylable="r", img_path=img_path, legend=[f"{osc} osc" for osc in osc_boundaries])
+
+
+def experiment_critical_multigraph():
+    topologies = (
+     "random_sw",
+     "small_world"
+     )
+    plots = [experiment_critical_lambda(list(range(100, 501, 50)), topology=topology)
+     for topology in topologies]
+
+    img_path = os.path.join("experiment", "plots", "lambda_critical_multigraph")
+    plot_multigraph(plots, xlable="osc_number", ylable="lambda_critical", img_path=img_path, fmt=".-", legend=topologies)
 
 
 if __name__ == '__main__':
 
     # experiment_multigraph("experiment", topology="small_world", dl=1, fmt="-", max_l=30)
-    experiment_critical_lambda( list(range(100, 501, 50)) , topology="small_world")
+    # experiment_critical_lambda( list(range(100, 501, 50)) , topology="small_world")
+
+
+    experiment_critical_multigraph()
