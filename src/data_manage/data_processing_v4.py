@@ -1,6 +1,7 @@
 import pickle
 import matplotlib.pyplot as plt
 import os
+import numpy
 
 
 def file_read(path):
@@ -10,94 +11,103 @@ def file_read(path):
             return pickle.load(file)
 
 
-def compile_path(experiment_folder, osc_n, topology, dl):
-    file = f"r_from_lambd_mean_{osc_n}_{dl}"
-    path = os.path.join(f"{experiment_folder}", "data", f"{topology}")
-    complete_path = os.path.join(path, file)
-    return complete_path
-
-
-def read_systems(folder_name, topology, dl=1, list_osc_n=range(100, 501, 100)):
+def read_system(folder_name, topology, osc_n, dl=1,):
     """
     read multiple systems at once
-    :param folder_name:
-    :param topology:
-    :param dl:
-    :param list_osc_n:
     :return: x lambd, y [r1_list, r2_list, r3_list,...]
     """
-    _path = compile_path(folder_name, list_osc_n[0], topology, dl)
-    x = file_read(_path)[0]     # lambda_vector
-    _path_list = [compile_path(folder_name, osc_n, topology, dl) for osc_n in list_osc_n]
-    y = [file_read(_path)[1] for _path in _path_list]   # r_mean_multiple
+    filename = f"r_from_lambd_mean_{osc_n}_{dl}"
+    _path = os.path.join(folder_name, "data", topology, filename)
+    if not(os.path.exists(_path)):
+        raise ValueError(f"Path '{_path}' does not exist")
+    x,y = file_read(_path)   # lambda_vector # r_mean_multiple
     return x, y
 
 
-def cut_the_right_side_of_x(x, y, start_from_l=5):
+def cut_the_right_side_of_x(x, y,*args, start_from_l=5):
+    x = numpy.array(x)
+    y = numpy.array(y)
     x = x[x<start_from_l]
-    y = [yi[:len(x)] for yi in y]
+    y = y[:len(x)]
     return x,y
 
+# ====================
 
-def experiment_multigraph(folder_name, topology, dl=1, fmt=".", max_l=None):
+
+def plot_multigraph(plots, xlable:str, ylable:str, img_path:str, fmt=""):
     """
-
-    :param folder_name:
-    :param topology:
-    :param dl:
-    :param fmt:
-    :param max_l:
+    plot multiple graphs
+    :param plots: (x,y), (x,y), (x,y)
     :return:
     """
-
-    x,y = read_systems(folder_name, topology=topology, dl=1,list_osc_n= range(100, 501, 50))
-
-    if max_l:
-        x, y = cut_the_right_side_of_x(x, y, start_from_l=max_l)
-
-    # plot section
-    for yi in y:
-        plt.plot(x,yi, fmt)
+    for plot in plots:
+        plt.plot(*plot, fmt)
     plt.grid()
-    plt.xlabel("lambda")
-    plt.ylabel("r")
+    plt.xlabel(xlable)
+    plt.ylabel(ylable)
+    plt.savefig(img_path)
+    plt.close()
+    return "Plot complete"
 
-    # save section
-    img_path = os.path.join(folder_name, "plots", topology, "multigraph")
+
+def find_crit_lambda(lamd_vector, r_mean, r_critical):
+    """
+    calculate r and lambda of the critical point on the r(lambda) function.
+    :return: r_critical, lambda_critical
+    """
+
+    lambd_higher_cr = [lamd_vector[i] for i in range(len(r_mean)) if r_mean[i] >= r_critical]
+    if len(lambd_higher_cr) > 0:
+        lambd_critical = [lamd_vector[i] for i in range(len(r_mean)) if r_mean[i] >= r_critical][0]
+    else:
+        lambd_critical = None
+    return lambd_critical
+
+
+def plot_plot(plot, xlable:str, ylable:str, img_path:str, fmt=""):
+    plt.plot(*plot, fmt)
+    plt.xlabel(xlable)
+    plt.ylabel(ylable)
+    plt.grid()
     plt.savefig(img_path)
     plt.close()
 
-#====================
-import numpy
-def critical_r(r_critical= 0.80, topology= "regular_sw", list_osc_n= range(100, 501, 100)):
-    lambd_critical = numpy.empty(len(list_osc_n))
-    i = 0
-    for osc_n in list_osc_n:
-        lamd_vector, r_mean = read_systems(osc_n, topology)
-        lambd_higher_cr = [lamd_vector[i] for i in range(len(r_mean)) if r_mean[i] >= r_critical]
-        if len(lambd_higher_cr) > 0:
-            lambd_critical[i] = [lamd_vector[i] for i in range(len(r_mean)) if r_mean[i] >= r_critical][0]
-        else:
-            lambd_critical[i] = None
-        i += 1
-
-    print("topology: {1}, critical r: {0}".format(lambd_critical, topology))
-    return  list_osc_n, lambd_critical
+# ====================
 
 
-def experiment_crit_lambd():
-    pl1 = critical_r(r_critical=0.95, topology="regular_sw", list_osc_n=range(100, 501, 50))
-    pl2 = critical_r(r_critical=0.95, topology="smallworld", list_osc_n=range(100, 501, 50))
-    pl3 = critical_r(r_critical=0.95, topology="random_sw", list_osc_n=range(100, 501, 50))
-    plt.plot(*pl1, ".-")
-    plt.plot(*pl2, ".-")
-    plt.plot(*pl3, ".-")
-    plt.xlabel("oscillator number")
-    plt.ylabel("lambda critical")
-    plt.grid()
-    img_path = "{0}\\lambd_crit_from_osc_1".format("img")
-    plt.savefig(img_path)
+def experiment_critical_lambda(
+    osc_boundaries,
+    folder_name = "experiment",
+    img_name = "crit_lambda_from_osc_n",
+    topology = "small_world",
+    r_critical = 0.95
+):
+
+    lambdas_critical = [find_crit_lambda(*read_system(folder_name, topology, osc_n, dl=1,), r_critical)
+                        for osc_n in osc_boundaries]
+
+
+    img_path = os.path.join(folder_name, "plots", topology, img_name)
+    plot_plot((osc_boundaries, lambdas_critical), xlable="oscillator number", ylable="lambda_critical", img_path=img_path, fmt=".-")
+    return (osc_boundaries, lambdas_critical)
+
+def experiment_multigraph(folder_name, topology, dl=1, fmt=".", max_l=None):
+    """
+    Plot multiple r(lambda) series on a figure. Then save in the folder_name/plots/topology
+    :return: None
+    """
+    osc_boundaries = list( range(100, 501, 50) )
+
+    if max_l:
+        plots = [cut_the_right_side_of_x(*read_system(folder_name, topology=topology, osc_n=osc_n, dl=1, ), start_from_l=max_l) for osc_n in osc_boundaries]
+    else:
+        plots = [read_system(folder_name, topology=topology, osc_n=osc_n, dl=1, ) for osc_n in osc_boundaries]
+
+    img_path = os.path.join(folder_name, "plots", topology, "multigraph")
+    plot_multigraph(plots, xlable="lambda", ylable="r", img_path=img_path)
+
 
 if __name__ == '__main__':
 
-    experiment_multigraph("exp1", topology="freescalling", dl=1, fmt="-", max_l=30)
+    # experiment_multigraph("experiment", topology="small_world", dl=1, fmt="-", max_l=30)
+    experiment_critical_lambda( list(range(100, 501, 50)) , topology="small_world")

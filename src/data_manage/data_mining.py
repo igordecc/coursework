@@ -80,7 +80,7 @@ def r_mean_experiment(
 
 
 def main():
-    working_dir = "exp1"
+    working_dir = "experiment"
     solver = KuramotoSystem()
     osc_n_list = range(100, 500 + 1, 50)
 

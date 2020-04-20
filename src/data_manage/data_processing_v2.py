@@ -68,5 +68,5 @@ if __name__ == '__main__':
     experiment_r_l_multi(topology="free_scale" , fmt='-')
     # experiment_r_l_multi(topology="fullyconnected" , fmt='-')
     #
-    # experiment_crit_lambd()
+    # experiment_critical_lambda()
 
