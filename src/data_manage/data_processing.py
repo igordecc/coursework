@@ -129,10 +129,39 @@ def experiment_critical_multigraph():
     plot_multigraph(plots, xlable="osc_number", ylable="lambda_critical", img_path=img_path, fmt=".-", legend=topologies)
 
 
+def replot_with_legend(data_path,
+                                  img_path,
+                                  xlabel="",
+                                  ylabel="",
+                                  fmt="",
+                                  legend=None
+                                  ):
+    plot = file_read(data_path)
+    if legend:
+        plt.plot(*plot, fmt, label=legend)
+    else:
+        plt.plot(*plot, fmt)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.grid()
+
+    plt.savefig(img_path)
+    plt.close()
+
+
+def experiment_replot(
+    folder_name = "experiment",
+    topology = "small_world",
+    ):
+    data_path = os.path.join(folder_name, "data", topology, )
+    images = os.listdir(data_path)
+    img_list = [os.path.join(folder_name, "plots", topology, image) for image in images]
+    replot_with_legend()
+
+
 if __name__ == '__main__':
-
-    experiment_multigraph("experiment", topology="random", dl=2, fmt="-", max_l=30)
+    # experiment_multigraph("experiment", topology="small_world", dl=1, fmt="-", max_l=30)
     # experiment_critical_lambda( list(range(100, 501, 50)) , topology="small_world")
-
-
     # experiment_critical_multigraph()
+    experiment_replot()
+
