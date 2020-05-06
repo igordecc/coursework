@@ -4,6 +4,7 @@ import os
 import numpy
 
 
+# ====== basic functions ======
 def file_read(path):
     if os.path.exists(path):
         with open(path, "rb") as file:
@@ -30,8 +31,6 @@ def cut_the_right_side_of_x(x, y,*args, start_from_l=5):
     x = x[x<start_from_l]
     y = y[:len(x)]
     return x,y
-
-# ====================
 
 
 def plot_multigraph(plots, xlable:str, ylable:str, img_path:str, fmt="", legend=None, **kwargs):
@@ -78,18 +77,18 @@ def plot_plot(plot, xlable:str, ylable:str, img_path:str, fmt=""):
     plt.savefig(img_path)
     plt.close()
 
-# ====================
 
-
+# ====== "for the task" functions ======
 def experiment_critical_lambda(
     osc_boundaries,
+    dl,
     folder_name = "experiment",
     img_name = "crit_lambda_from_osc_n",
     topology = "small_world",
     r_critical = 0.95
 ):
 
-    lambdas_critical = [find_crit_lambda(*read_system(folder_name, topology, osc_n, dl=1,), r_critical)
+    lambdas_critical = [find_crit_lambda(*read_system(folder_name, topology, osc_n, dl=dl,), r_critical)
                         for osc_n in osc_boundaries]
 
 
@@ -117,7 +116,8 @@ def experiment_multigraph(folder_name, topology, dl=1, fmt=".", max_l=None):
     plot_multigraph(plots, xlable="lambda", ylable="r", img_path=img_path, legend=[f"{osc} osc" for osc in osc_boundaries])
 
 
-def experiment_critical_multigraph():
+# ====== user functions ======
+def multigraph_critical_lambda():
     topologies = (
      "random_sw",
      "small_world"
@@ -129,39 +129,46 @@ def experiment_critical_multigraph():
     plot_multigraph(plots, xlable="osc_number", ylable="lambda_critical", img_path=img_path, fmt=".-", legend=topologies)
 
 
-def replot_with_legend(data_path,
-                                  img_path,
-                                  xlabel="",
-                                  ylabel="",
-                                  fmt="",
-                                  legend=None
-                                  ):
-    plot = file_read(data_path)
-    if legend:
-        plt.plot(*plot, fmt, label=legend)
-    else:
-        plt.plot(*plot, fmt)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.grid()
+def replot():
+    def replot_with_legend(data_path,
+                                      img_path,
+                                      xlabel="",
+                                      ylabel="",
+                                      fmt="",
+                                      legend=None
+                                      ):
+        plot = file_read(data_path)
+        if legend:
+            plt.plot(*plot, fmt, label=legend)
+        else:
+            plt.plot(*plot, fmt)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.grid()
 
-    plt.savefig(img_path)
-    plt.close()
+        plt.savefig(img_path)
+        plt.close()
 
 
-def experiment_replot(
-    folder_name = "experiment",
-    topology = "small_world",
-    ):
-    data_path = os.path.join(folder_name, "data", topology, )
-    images = os.listdir(data_path)
-    img_list = [os.path.join(folder_name, "plots", topology, image) for image in images]
-    replot_with_legend()
+    def experiment_replot(
+        folder_name = "experiment",
+        topology = "small_world",
+        ):
+        data_path = os.path.join(folder_name, "data", topology, )
+        images = os.listdir(data_path)
+        img_list = [os.path.join(folder_name, "plots", topology, image) for image in images]
+        replot_with_legend()
+
+
+def main():
+    topology = "free_scaling"
+    dl = 1
+    experiment_multigraph("experiment", topology=topology, dl=dl, fmt="-", max_l=100)
+    experiment_critical_lambda(list(range(100, 501, 50)), topology=topology, dl=dl, r_critical=0.89)
 
 
 if __name__ == '__main__':
-    # experiment_multigraph("experiment", topology="small_world", dl=1, fmt="-", max_l=30)
-    # experiment_critical_lambda( list(range(100, 501, 50)) , topology="small_world")
-    # experiment_critical_multigraph()
-    experiment_replot()
+    main()
+
+
 

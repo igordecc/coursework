@@ -163,13 +163,13 @@ class NetworkConfig:
 
 
 if __name__=="__main__":
-    oscillators_number = 10
+    oscillators_number = 20
     community_number_to_detect = 3
-    config = create_config(oscillators_number=oscillators_number, topology="smallWorld", reconnectionProbability=0.1, neighbours=5)
+    config = create_config(oscillators_number=oscillators_number, topology="smallworld", reconnectionProbability=0.1, neighbours=5)
 
 
-    pos = networkx.drawing.fruchterman_reingold_layout(config['topology'])
-    networkx.draw_networkx(config['topology'], pos)
+    pos = networkx.drawing.fruchterman_reingold_layout(config['topology'].to_undirected())
+    networkx.draw_networkx(config['topology'].to_undirected(), pos)
     pyplot.show()
 
 
