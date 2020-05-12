@@ -39,19 +39,30 @@ def r_mean_experiment(
         # 
         n_sys_start: int = 0
 ):
+
     dl_power = abs(int(numpy.log10(step_lambda)))
     lambdas = numpy.arange(min_lambda, max_lambda, step_lambda, dtype=numpy.float32)
-    topology = network_properties["topology"]
-    n_oscillators = network_properties["n"]
+    adjacency_matrix = network_properties["adjacency_matrix"]
+
+    if adjacency_matrix is None:
+        topology = network_properties["topology"]
+        n_oscillators = network_properties["n"]
+    else:
+        assert isinstance(adjacency_matrix, numpy.ndarray)
+        assert len(adjacency_matrix.shape) == 2
+        assert adjacency_matrix.shape[0] == adjacency_matrix.shape[1]
+
+        topology = "None"
+        n_oscillators = adjacency_matrix.shape[0]
+
     networks_path = os.path.join(working_dir, "networks")
     os.makedirs(networks_path, exist_ok=True)
 
     rs = []
+
     for network_id in tqdm(range(n_sys_start, n_networks)):
         path = os.path.join(networks_path, f"{topology}_{n_oscillators}_{network_id}.pickle")
-        
         config = NetworkConfig.create_or_load(path, **network_properties)
-
         r_series = solver.solve_multiple(
             step,
             iterations,
@@ -82,13 +93,13 @@ def r_mean_experiment(
 def main():
     working_dir = "experiment"
     solver = KuramotoSystem()
-    osc_n_list = range(100, 500 + 1, 50)
+    osc_n_list = range(100, 100 + 1, 50)
 
     for i in osc_n_list:
         r_mean_experiment(
             working_dir, solver, 
             network_properties=dict(topology="free_scaling", n=i,),
-            min_lambda=0, max_lambda=100, step_lambda=0.1,
+            min_lambda=0, max_lambda=100, step_lambda=.1,
             n_networks=20
         )
 

@@ -112,21 +112,31 @@ class NetworkConfig:
     def __init__(self, **properties):
         self._properties = properties.copy()
 
-        self.topology = properties.pop("topology")
+        self.topology = properties.pop("topology", "None")
 
-        self.adjacency = networkx.to_numpy_array(
-            create_topology(self.topology, **properties), 
-            dtype=numpy.float32
-        )
+        adjacency = properties.get("adjacency_matrix")
+        if adjacency is None:
+            self.adjacency = networkx.to_numpy_array(
+                create_topology(self.topology, **properties),
+                dtype=numpy.float32
+                )
+        else:
+            assert isinstance(adjacency, numpy.ndarray)
+            assert len(adjacency.shape) == 2
+            assert adjacency.shape[0] == adjacency.shape[1]
+
+            self.adjacency = adjacency
+
+        self.n = properties.pop("n", self.adjacency.shape[0])
 
         self.omega = numpy.array([
             round(random.uniform(0.05, 0.2), 2)
-            for i in range(properties['n'])
+            for i in range(self.n)
         ], dtype=numpy.float32)
 
         self.phase = numpy.array([
             round(random.uniform(0, 12), 2) 
-            for i in range(properties['n'])
+            for i in range(self.n)
         ], dtype=numpy.float32)
 
     def properties(self):
@@ -165,7 +175,7 @@ class NetworkConfig:
 if __name__=="__main__":
     oscillators_number = 20
     community_number_to_detect = 3
-    config = create_config(oscillators_number=oscillators_number, topology="smallworld", reconnectionProbability=0.1, neighbours=5)
+    config = create_config(oscillators_number=oscillators_number, topology="random", reconnectionProbability=0.1, neighbours=5)
 
 
     pos = networkx.drawing.fruchterman_reingold_layout(config['topology'].to_undirected())
