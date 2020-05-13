@@ -63,6 +63,11 @@ def r_mean_experiment(
     for network_id in tqdm(range(n_sys_start, n_networks)):
         path = os.path.join(networks_path, f"{topology}_{n_oscillators}_{network_id}.pickle")
         config = NetworkConfig.create_or_load(path, **network_properties)
+        print(f"config.adjacency {config.adjacency}")
+        print(f"config.phase {config.phase}")
+        print(f"config.omega {config.omega}")
+        print(f"lambdas {lambdas} ")
+        print(f"")
         r_series = solver.solve_multiple(
             step,
             iterations,
