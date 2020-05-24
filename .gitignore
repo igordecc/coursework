@@ -10,3 +10,4 @@ log/
 img/
 venv/
 __pycache__
+!requirements.txt
