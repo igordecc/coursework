@@ -9,6 +9,7 @@ import argparse
 from data_mining import r_mean_experiment
 from config.config_creator import NetworkConfig
 from main.OCL_r import KuramotoSystem
+import numpy
 
 
 def main():
@@ -22,13 +23,14 @@ def main():
     for file in args.file_list:
 
         with open(file) as csv_input_file:
-            adjacency_matrix = pandas.read_csv(csv_input_file, header=None).values
+            adjacency_matrix = numpy.array(pandas.read_csv(csv_input_file, header=None).values, dtype=numpy.float64)
 
         r_mean_experiment(
             working_dir, solver,
             network_properties=dict(adjacency_matrix=adjacency_matrix),
             min_lambda=0, max_lambda=100, step_lambda=.1,
-            n_networks=20
+            n_networks=20,
+            save_network_config=False
         )
 
     input()

@@ -32,6 +32,7 @@ def main():
                 plt.show()
         except:
             print(f"unexpected error {sys.exc_info()[0]}")
+            input()
 
 
 if __name__ == '__main__':

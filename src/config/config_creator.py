@@ -180,6 +180,12 @@ if __name__=="__main__":
 
     pos = networkx.drawing.fruchterman_reingold_layout(config['topology'].to_undirected())
     networkx.draw_networkx(config['topology'].to_undirected(), pos)
+
+    import pandas
+
+    x = networkx.to_numpy_array(config['topology'], dtype=numpy.float32)
+    print(x)
+    pandas.DataFrame(x).to_csv("./random_network.csv", header=False, index=False)
     pyplot.show()
 
 

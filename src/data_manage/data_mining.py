@@ -37,7 +37,8 @@ def r_mean_experiment(
         max_lambda: float = 10,
         step_lambda: float = 1,
         # 
-        n_sys_start: int = 0
+        n_sys_start: int = 0,
+        save_network_config=True
 ):
 
     dl_power = abs(int(numpy.log10(step_lambda)))
@@ -62,12 +63,10 @@ def r_mean_experiment(
 
     for network_id in tqdm(range(n_sys_start, n_networks)):
         path = os.path.join(networks_path, f"{topology}_{n_oscillators}_{network_id}.pickle")
-        config = NetworkConfig.create_or_load(path, **network_properties)
-        print(f"config.adjacency {config.adjacency}")
-        print(f"config.phase {config.phase}")
-        print(f"config.omega {config.omega}")
-        print(f"lambdas {lambdas} ")
-        print(f"")
+        if save_network_config:
+            config = NetworkConfig.create_or_load(path, **network_properties)
+        else:
+            config = NetworkConfig(**network_properties)
         r_series = solver.solve_multiple(
             step,
             iterations,

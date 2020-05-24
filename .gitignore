@@ -8,4 +8,5 @@
 ic/
 log/
 img/
+venv/
 __pycache__
