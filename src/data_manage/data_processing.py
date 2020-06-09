@@ -69,11 +69,13 @@ def find_crit_lambda(lamd_vector, r_mean, r_critical):
     return lambd_critical
 
 
-def plot_plot(plot, xlable:str, ylable:str, img_path:str, fmt=""):
+def plot_plot(plot, xlable:str, ylable:str, img_path:str, fmt="", ymin=None, ymax=None, ny=None, **kwargs):
     plt.plot(*plot, fmt)
     plt.xlabel(xlable)
     plt.ylabel(ylable)
     plt.grid()
+    if ny:
+        plt.yticks(numpy.round(numpy.linspace(ymin, ymax, ny), 2))
     plt.savefig(img_path)
     plt.close()
 
@@ -85,7 +87,8 @@ def experiment_critical_lambda(
     folder_name = "experiment",
     img_name = "crit_lambda_from_osc_n",
     topology = "small_world",
-    r_critical = 0.95
+    r_critical = 0.95,
+    **kwargs
 ):
 
     lambdas_critical = [find_crit_lambda(*read_system(folder_name, topology, osc_n, dl=dl,), r_critical)
@@ -93,7 +96,7 @@ def experiment_critical_lambda(
 
 
     img_path = os.path.join(folder_name, "plots", topology, img_name)
-    plot_plot((osc_boundaries, lambdas_critical), xlable="oscillator number", ylable="lambda_critical", img_path=img_path, fmt=".-")
+    plot_plot((osc_boundaries, lambdas_critical), xlable="oscillator number", ylable="lambda_critical", img_path=img_path, fmt=".-", **kwargs)
     return (osc_boundaries, lambdas_critical)
 
 
@@ -161,10 +164,10 @@ def replot():
 
 
 def main():
-    topology = "free_scaling"
-    dl = 1
+    topology = "fully_connected"
+    dl = 2
     experiment_multigraph("experiment", topology=topology, dl=dl, fmt="-", max_l=100)
-    experiment_critical_lambda(list(range(100, 501, 50)), topology=topology, dl=dl, r_critical=0.89)
+    experiment_critical_lambda(list(range(100, 501, 50)), topology=topology, dl=dl, r_critical=0.80, ny=10, ymin=0, ymax=0.2)
 
 
 if __name__ == '__main__':

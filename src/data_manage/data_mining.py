@@ -5,6 +5,7 @@ import time
 import numpy
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from time import perf_counter
 
 from main.OCL_r import KuramotoSystem
 from config.config_creator import create_config, NetworkConfig
@@ -40,15 +41,14 @@ def r_mean_experiment(
         n_sys_start: int = 0,
         save_network_config=True
 ):
-
     dl_power = abs(int(numpy.log10(step_lambda)))
     lambdas = numpy.arange(min_lambda, max_lambda, step_lambda, dtype=numpy.float32)
-    adjacency_matrix = network_properties["adjacency_matrix"]
 
-    if adjacency_matrix is None:
+    if "adjacency_matrix" not in network_properties.keys():
         topology = network_properties["topology"]
         n_oscillators = network_properties["n"]
     else:
+        adjacency_matrix = network_properties["adjacency_matrix"]
         assert isinstance(adjacency_matrix, numpy.ndarray)
         assert len(adjacency_matrix.shape) == 2
         assert adjacency_matrix.shape[0] == adjacency_matrix.shape[1]
@@ -67,7 +67,8 @@ def r_mean_experiment(
             config = NetworkConfig.create_or_load(path, **network_properties)
         else:
             config = NetworkConfig(**network_properties)
-        r_series = solver.solve_multiple(
+        start = perf_counter()
+        r_series, timings = solver.solve_multiple(
             step,
             iterations,
             phase=config.phase,
@@ -75,7 +76,9 @@ def r_mean_experiment(
             adjacency=config.adjacency,
             lambdas=lambdas
         )
-
+        stop = perf_counter() - start
+        timings["solver.solve_multiple run in"] = stop
+        print(f"\n  solver.solve_multiple run in {stop} \n")
         del config
 
         rs.append(r_series)
@@ -85,27 +88,34 @@ def r_mean_experiment(
     def make_path(output_type):
         return os.path.join(working_dir, output_type, topology, f"r_from_lambd_mean_{n_oscillators}_{dl_power}")
 
-    plot_path = make_path("plots")
-    print(f"Saving plot into {plot_path}")
-    plot_and_save(plot_path, lambdas, r_mean)
+    # plot_path = make_path("plots")
+    # print(f"Saving plot into {plot_path}")
+    # plot_and_save(plot_path, lambdas, r_mean)
+    #
+    # log_path = make_path("data")
+    # print(f"Saving data into {log_path}")
+    # save_data(log_path, lambdas, r_mean)
 
-    log_path = make_path("data")
-    print(f"Saving data into {log_path}")
-    save_data(log_path, lambdas, r_mean)
+    return timings
 
 
 def main():
     working_dir = "experiment"
     solver = KuramotoSystem()
-    osc_n_list = range(100, 100 + 1, 50)
+    osc_n_list = list(range(100, 500 + 1, 50))
+
+    calc_time = []
 
     for i in osc_n_list:
+        calc_time.append(
         r_mean_experiment(
-            working_dir, solver, 
-            network_properties=dict(topology="free_scaling", n=i,),
-            min_lambda=0, max_lambda=100, step_lambda=.1,
+            working_dir, solver,
+            network_properties=dict(topology="fully_connected", n=i, ),
+            min_lambda=0, max_lambda=2, step_lambda=0.01,
             n_networks=20
         )
+        )
+        print(f"time: {calc_time}")
 
 
 if __name__ == '__main__':

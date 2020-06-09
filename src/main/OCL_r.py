@@ -1,6 +1,6 @@
 import numpy
 import pyopencl as cl
-
+from time import perf_counter
 
 KERNEL_SRC = """
 kernel void kuramoto_equation(
@@ -69,6 +69,7 @@ def as_cl_buffer(ctx, arr, flags=cl.mem_flags.READ_ONLY):
 class KuramotoSystem:
 
     def __init__(self, platform_id=0, device_id=0):
+        start = perf_counter()
         device = cl.get_platforms()[platform_id].get_devices(cl.device_type.GPU)[device_id]
 
         self.context = cl.Context(devices=[device])
@@ -76,12 +77,16 @@ class KuramotoSystem:
         self.program = cl.Program(self.context, KERNEL_SRC).build(options=['-cl-std=CL2.0'])
         self._solve = cl.Kernel(self.program, name='kuramoto_equation')
         self._transform_result = cl.Kernel(self.program, name='transform_result')
+        # print(f" kernel init {perf_counter() - start}")
 
     def _solve_multiple(self, step: float, iterations: int, n_systems: int, n_oscillators: int,
                         omega: cl.Buffer, phase: cl.Buffer, adjacency: cl.Buffer, lambdas: cl.Buffer):
+        timings = {}
+
         phase_size = phase.get_info(cl.mem_info.SIZE)
         phase2_buf = cl.Buffer(self.context, cl.mem_flags.READ_WRITE, size=phase_size)
 
+        start = perf_counter()
         for _ in range(iterations):
             self._solve(
                 self.queue, (n_systems, n_oscillators), None,
@@ -94,20 +99,30 @@ class KuramotoSystem:
             )
 
             phase, phase2_buf = phase2_buf, phase
-
+        self.queue.finish()
+        timings["_solving for"] = perf_counter() - start
+        print(f" _solving for _ {perf_counter() - start}")
         phase_out = numpy.empty((n_systems,), dtype=numpy.float32)
-        phase_out_buf = cl.Buffer(self.context, cl.mem_flags.WRITE_ONLY, size=phase_out.nbytes)
-
+        # phase_out_buf = cl.Buffer(self.context, cl.mem_flags.WRITE_ONLY, size=phase_out.nbytes)
+        phase_out_buf = cl.Buffer(self.context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=phase_out)
+        # phase_buf = cl.Buffer(self.context, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=phase)
+        start = perf_counter()
         self._transform_result(
             self.queue, (n_systems,), None,
             numpy.int32(n_oscillators),
             phase,
             phase_out_buf
         )
-
+        self.queue.finish()
+        timings["_transform_result"] = perf_counter() - start
+        print(f" _transform_result {perf_counter() - start}")
+        start = perf_counter()
         cl.enqueue_copy(self.queue, phase_out, phase_out_buf)
+        timings["copy"] = perf_counter() - start
+        print(f" COPY {perf_counter() - start}")
 
-        return phase_out
+
+        return phase_out, timings
 
     def solve_multiple(self, step: float, iterations: int, phase: numpy.ndarray, omega, adjacency, lambdas):
         n_systems, n_oscillators = len(lambdas), len(phase)
@@ -119,10 +134,12 @@ class KuramotoSystem:
         lambdas_buf = as_cl_buffer(self.context, lambdas)
         adjacency_buf = as_cl_buffer(self.context, adjacency)
 
-        return self._solve_multiple(
+        _result, timings = self._solve_multiple(
             step, iterations, n_systems, n_oscillators,
             omega_buf, phase_buf, adjacency_buf, lambdas_buf
         )
+
+        return _result, timings
 
 
 if __name__ == '__main__':

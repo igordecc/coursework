@@ -175,7 +175,7 @@ class NetworkConfig:
 if __name__=="__main__":
     oscillators_number = 20
     community_number_to_detect = 3
-    config = create_config(oscillators_number=oscillators_number, topology="random", reconnectionProbability=0.1, neighbours=5)
+    config = create_config(oscillators_number=oscillators_number, topology="smallworld", reconnectionProbability=0.15, neighbours=5)
 
 
     pos = networkx.drawing.fruchterman_reingold_layout(config['topology'].to_undirected())
