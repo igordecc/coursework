@@ -11,7 +11,7 @@ import networkx.algorithms.community as community
 from matplotlib import pyplot
 
 
-def create_config(
+def create_config(*,
         lambd=0.7,
         oscillators_number=10,
         start_time=0,
